@@ -58,30 +58,18 @@
             font-weight: 700;
         }
 
-        .admin-controls-top {
-            position: absolute; top: 0; right: 0;
-            display: flex; gap: 8px; align-items: center;
-        }
+        .admin-controls-top { position: absolute; top: 0; right: 0; display: flex; gap: 8px; align-items: center; }
 
         .sync-badge {
-            font-size: 10px;
-            color: #22c55e;
-            font-weight: 700;
-            background: rgba(34, 197, 94, 0.1);
-            border: 1px solid #22c55e;
-            padding: 3px 8px;
-            border-radius: 12px;
+            font-size: 10px; color: #22c55e; font-weight: 700;
+            background: rgba(34, 197, 94, 0.1); border: 1px solid #22c55e;
+            padding: 3px 8px; border-radius: 12px;
         }
 
         .admin-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid var(--gold);
-            color: var(--gold-light);
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
+            background: rgba(255, 255, 255, 0.08); border: 1px solid var(--gold);
+            color: var(--gold-light); padding: 5px 12px; border-radius: 20px;
+            font-size: 11px; font-weight: 700; cursor: pointer;
         }
 
         .venue-badge {
@@ -94,8 +82,7 @@
         .container { max-width: 100%; margin: 0 auto; }
 
         .card {
-            background: var(--navy-card);
-            border: 1px solid rgba(223, 177, 91, 0.25);
+            background: var(--navy-card); border: 1px solid rgba(223, 177, 91, 0.25);
             border-radius: 12px; padding: 15px; margin-bottom: 15px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.5);
         }
@@ -142,8 +129,9 @@
         }
 
         .checklist-item {
-            display: flex; align-items: center; background: var(--navy-card); padding: 8px 10px;
-            border-radius: 6px; border-left: 3px solid var(--commure-teal); font-size: 12px;
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--navy-card); padding: 8px 10px; border-radius: 6px;
+            border-left: 3px solid var(--commure-teal); font-size: 12px;
         }
 
         .groups-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 15px; }
@@ -214,7 +202,7 @@
 
         select, input[type="text"] {
             width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--gold);
-            background: #0f172a; color: #fff; font-size: 12px; outline: none; margin-bottom: 10px;
+            background: #0f172a; color: #fff; font-size: 12px; outline: none; margin-bottom: 8px;
         }
     </style>
 </head>
@@ -272,25 +260,36 @@
     <!-- TAB 1: DRAW & SETUP -->
     <div id="section-draw">
         <div id="setup-card" class="card" style="text-align:center;">
-            <h3>Step 1: Load Teams & Start Draw</h3>
+            <h3>Step 1: Load 32 Teams & Start Draw</h3>
             
             <div style="max-width:650px; margin:0 auto;">
-                <textarea id="paste-box" class="paste-area" placeholder="Paste your raw Google Forms responses or standard text rows here..."></textarea>
+                <textarea id="paste-box" class="paste-area" placeholder="Paste data here or click 'Load Sample Teams' below..."></textarea>
                 
-                <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 10px; flex-wrap: wrap;">
-                    <button class="btn btn-teal btn-small" onclick="processPastedText()">📋 Parse & Load Textbox Data</button>
+                <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 15px; flex-wrap: wrap;">
+                    <button class="btn btn-teal btn-small" onclick="processPastedText()">📋 Parse Textbox</button>
                     
                     <label class="btn btn-purple btn-small" style="cursor: pointer; display: inline-block;">
-                        📁 Upload CSV / TSV File
-                        <input type="file" id="fileUploader" accept=".csv, .tsv, .txt" style="display: none;" onchange="handleFileUpload(event)">
+                        📁 Upload File
+                        <input type="file" id="fileUploader" accept=".csv, .txt, .tsv" style="display: none;" onchange="handleFileUpload(event)">
                     </label>
 
-                    <button class="btn btn-edit btn-small" onclick="loadSampleData()">⚡ Load Sample Data</button>
+                    <button class="btn btn-edit btn-small" onclick="loadSampleData()">⚡ Load Sample Teams</button>
+                </div>
+
+                <!-- DIRECT MANUAL TEAM ADD FORM -->
+                <div style="background:#0f172a; padding:12px; border-radius:8px; border:1px solid rgba(223, 177, 91, 0.3); margin-bottom:15px; text-align:left;">
+                    <div style="font-size:11px; font-weight:bold; color:var(--gold-light); margin-bottom:6px;">➕ Add Single Team:</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:8px; align-items:center;">
+                        <input type="text" id="manualTeamName" placeholder="Team Name" style="margin:0;">
+                        <input type="text" id="manualP1" placeholder="Player 1" style="margin:0;">
+                        <input type="text" id="manualP2" placeholder="Player 2" style="margin:0;">
+                        <button class="btn btn-teal btn-small" onclick="addSingleManualTeam()">Add</button>
+                    </div>
                 </div>
             </div>
 
             <div class="checklist-grid" id="team-checklist">
-                <div style="text-align:center; color:#94a3b8; padding:20px; width:100%;">No teams loaded yet. Paste rows or upload a CSV file above.</div>
+                <div style="text-align:center; color:#94a3b8; padding:20px; width:100%;">No teams loaded yet. Use the buttons above.</div>
             </div>
 
             <p style="font-size:15px;">Selected Teams: <span id="selected-count" style="color:var(--gold-light); font-weight:bold;">0</span> / 32</p>
@@ -392,142 +391,174 @@
                     }
                     document.getElementById('sync-status').innerText = '🟢 Live Cloud Synced';
                 });
-            } catch(e) {
-                console.warn(e);
-            }
+            } catch(e) { console.warn(e); }
         }
     };
 
-    /* 🎯 FAILPROOF PARSER FOR GOOGLE FORMS DATA */
-    function parseGoogleFormData(rawText) {
-        if (!rawText || !rawText.trim()) {
-            alert("⚠️ Please paste data into the text box first!");
-            return;
-        }
+    /* 🟢 STATIC SAMPLE DATA PRESET */
+    function loadSampleData() {
+        activeTeams = [
+            { name: "DO NOT RECON", players: "SEKANDER SHAAN & MD MUHAIMINUR RAHMAN" },
+            { name: "MAVERICKS", players: "SADMAN SAMI KARIM & NILOY SARKER PRANTO" },
+            { name: "JOHN CENA", players: "SAKIB AHMED & MOHAMMAD RAFA IMTIAZ" },
+            { name: "THE PAPAS", players: "UMAR IBN ALI & MOSTAFIZUR RAHAMAN" },
+            { name: "UNDERDOGS", players: "A M NIBRASH UDDIN NIBIR & MD ABDULLAH SHIHAB" },
+            { name: "404 SKILL NOT FOUND", players: "FAKIR JAWAD AL QUDDUS & SHAHRIAR AZAD FRAHIM" },
+            { name: "FCFO", players: "IFTIKHER AHMED & AHNAF ABED SAYOR" },
+            { name: "SWAT KATS", players: "ORNET M ROZARIO & MD ARIFINUL HOQUE" },
+            { name: "JUST-HERETOHAVEFUN", players: "APURBA HALDER & MAHFUJUL ISLAM" },
+            { name: "IMPULSE", players: "SHAH ANAN ABDULLAH & MD MUIEDUL ALAM" },
+            { name: "PIP PONG", players: "MAHIDUL ISLAM MAHI & SHAHID AHAMED CHOWDHURY" },
+            { name: "HUFFLEPUFF", players: "MD MARUF AHMED & FARHAN MUHIB BONDHAN" },
+            { name: "SPOODERMEN", players: "RAIYAN IBN TAHER ARITTRO & ANZAL AHMED ABIR" },
+            { name: "SHAOLIN CENTRE", players: "SYED AYMAN SHAHBAD & MD SHIAM UR RASHID" },
+            { name: "WILL SMASH FOR INCREMENTS", players: "FERDOUS HASNAT & RADIV SARWAR" },
+            { name: "HIT & RUN", players: "MD ZAHIDUL ALAM & SYED JUBAIR HASSAN" },
+            { name: "VARGENTINA", players: "ABDULLAH AL TAMIM & NAVID AL AZIM" },
+            { name: "SMASHBROS", players: "TASKIN SHADMAN & SAFAT SAMIN" },
+            { name: "TEAM NWA", players: "DAIYAN HEDAYET HUSSAIN & SHADMAN JHUHAYER" },
+            { name: "TEAM HARAMBALL", players: "FARHAN ISHRAQ FAGUN & MD TAZBID TAHSHIN" },
+            { name: "STRATEGIC SHOT", players: "ARNOB BARUA & MEHEDI HASSAN SHANTO" },
+            { name: "HANDS OF GOD", players: "GAZI MOHAMMAD RABIB & RAFID ISLAM" },
+            { name: "BLADE RUNNERS", players: "ARIFUL HASAN & SABIK TAZWAR ISLAM" },
+            { name: "NULL POINTERS", players: "MD NAZMUL HOSAIN & KAZI TAMJEED NEWAZ" },
+            { name: "TT TITANS", players: "FARAAZ AHMED & ABDULLAH AR RAKIN AZAD" }
+        ];
+
+        activeTeams.forEach(t => { drawState.teamPlayersMap[t.name] = t.players; });
+        renderChecklist();
+        alert(`✅ Successfully loaded ${activeTeams.length} teams from preset!`);
+    }
+
+    /* 🟢 ULTRA-ROBUST FORM RESPONSE PARSER */
+    function processPastedText() {
+        let text = document.getElementById('paste-box').value.trim();
+        if (!text) return alert("⚠️ Please paste text into the box first!");
 
         let parsed = [];
-        
-        // 1. Try splitting by Timestamp occurrences (MM/DD/YYYY or M/D/YYYY)
-        let timestampRegex = /(?=\d{1,2}\/\d{1,2}\/\d{4})/g;
-        let entries = rawText.split(timestampRegex);
 
-        entries.forEach(entry => {
-            let str = entry.trim();
-            if (!str || str.toLowerCase().includes("timestamp") || str.toLowerCase().includes("agreement to rules")) return;
+        // Splitting by Date Stamps (e.g., 7/22/2026 or 07/22/2026)
+        let rows = text.split(/(?=\b\d{1,2}\/\d{1,2}\/\d{4}\b)/g);
 
-            let tName = "", p1 = "", p2 = "";
+        rows.forEach(row => {
+            let r = row.trim();
+            if (!r || r.toLowerCase().includes("timestamp") || r.toLowerCase().includes("agreement")) return;
 
-            // Strategy 1: Look for @commure.com or @ emails as anchors
-            let emailMatches = str.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
+            // Extract all emails
+            let emails = r.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
 
-            if (emailMatches.length >= 2) {
-                // Email 1 is Submitter, Email 2 is Player 1 Email, Email 3 is Player 2 Email
-                let firstEmail = emailMatches[0];
-                let secondEmail = emailMatches[1];
+            let name = "", p1 = "", p2 = "";
 
-                // Text between Email 1 and Email 2 contains: [Team Name] [Player 1 Name]
-                let e1Idx = str.indexOf(firstEmail) + firstEmail.length;
-                let e2Idx = str.indexOf(secondEmail);
-                
-                if (e1Idx < e2Idx) {
-                    let teamAndP1 = str.substring(e1Idx, e2Idx).trim();
-                    
-                    // Split teamAndP1 by tabs or multiple spaces
-                    let parts = teamAndP1.split(/\t|\n|\s{2,}/).map(s => s.trim()).filter(s => s.length > 0);
-                    if (parts.length >= 2) {
-                        tName = parts[0];
-                        p1 = parts.slice(1).join(" ");
-                    } else if (parts.length === 1) {
-                        tName = parts[0];
-                    }
+            if (emails.length >= 2) {
+                let e1 = emails[0];
+                let e2 = emails[1];
+
+                let middleSegment = r.substring(r.indexOf(e1) + e1.length, r.indexOf(e2)).trim();
+                let middleParts = middleSegment.split(/\t|\n|\s{2,}/).map(s => s.trim()).filter(s => s.length > 0);
+
+                if (middleParts.length >= 2) {
+                    name = middleParts[0];
+                    p1 = middleParts.slice(1).join(" ");
+                } else if (middleParts.length === 1) {
+                    name = middleParts[0];
                 }
 
-                // Text after Email 2 contains: [Player 1 Phone] [Player 2 Name] [Player 2 Email]...
-                let afterE2 = str.substring(e2Idx + secondEmail.length).trim();
-                let afterE2Parts = afterE2.split(/\t|\n|\s{2,}/).map(s => s.trim()).filter(s => 
+                let endSegment = r.substring(r.indexOf(e2) + e2.length).trim();
+                let endParts = endSegment.split(/\t|\n|\s{2,}/).map(s => s.trim()).filter(s => 
                     s.length > 0 && 
                     !/^\+?\d{8,15}$/.test(s) && 
                     !s.includes('@') &&
                     !s.toLowerCase().includes("rulebook") &&
-                    !s.toLowerCase().includes("professional bat") &&
-                    !s.toLowerCase().includes("facility team")
+                    !s.toLowerCase().includes("bat")
                 );
 
-                if (afterE2Parts.length >= 1) {
-                    p2 = afterE2Parts[0];
-                }
-            } 
-            
-            // Strategy 2: Fallback delimiter split (Tabs, Commas, Pipelines)
-            if (!tName) {
-                let cols = str.split(/\t|,|\|/).map(c => c.trim()).filter(c => c !== "");
-                if (cols.length >= 4) {
-                    tName = cols[2] || cols[0];
-                    p1 = cols[3] || cols[1];
-                    p2 = cols[6] || cols[2];
+                if (endParts.length >= 1) p2 = endParts[0];
+            } else {
+                // Pipe or Tab Fallback
+                let cols = r.split(/\t|\|/).map(c => c.trim()).filter(c => c !== "");
+                if (cols.length >= 3) {
+                    name = cols[0];
+                    p1 = cols[1];
+                    p2 = cols[2];
                 } else if (cols.length >= 1) {
-                    tName = cols[0];
-                    p1 = cols[1] || "";
-                    p2 = cols[2] || "";
+                    name = cols[0];
                 }
             }
 
-            if (tName && !tName.toLowerCase().includes("timestamp")) {
-                let nameUpper = tName.toUpperCase();
-                let playersUpper = (p1 && p2) ? `${p1} & ${p2}`.toUpperCase() : (p1 ? p1.toUpperCase() : "PLAYER 1 & PLAYER 2");
-
-                parsed.push({ name: nameUpper, players: playersUpper });
-                drawState.teamPlayersMap[nameUpper] = playersUpper;
+            if (name) {
+                let nUpper = name.toUpperCase();
+                let pUpper = (p1 && p2) ? `${p1} & ${p2}`.toUpperCase() : (p1 ? p1.toUpperCase() : "PLAYER 1 & PLAYER 2");
+                parsed.push({ name: nUpper, players: pUpper });
+                drawState.teamPlayersMap[nUpper] = pUpper;
             }
         });
 
         if (parsed.length > 0) {
             activeTeams = parsed;
             renderChecklist();
-            alert(`🎉 Success! Loaded ${parsed.length} teams.`);
+            alert(`✅ Successfully parsed & loaded ${parsed.length} teams!`);
         } else {
-            alert("❌ Could not parse team names. Click 'Load Sample Data' to test!");
+            alert("⚠️ Parsing failed. Try clicking '⚡ Load Sample Teams' to auto-populate instantly!");
         }
     }
 
-    function processPastedText() {
-        let textarea = document.getElementById('paste-box');
-        parseGoogleFormData(textarea.value);
-    }
-
-    function handleFileUpload(event) {
-        let file = event.target.files[0];
+    /* 🟢 FILE UPLOAD PARSER */
+    function handleFileUpload(e) {
+        let file = e.target.files[0];
         if (!file) return;
 
         let reader = new FileReader();
-        reader.onload = function(e) {
-            let content = e.target.result;
-            document.getElementById('paste-box').value = content;
-            parseGoogleFormData(content);
+        reader.onload = function(evt) {
+            document.getElementById('paste-box').value = evt.target.result;
+            processPastedText();
         };
         reader.readAsText(file);
-        event.target.value = '';
+        e.target.value = '';
     }
 
-    function loadSampleData() {
-        let sample = `7/22/2026 18:27:52\tsekander.shaan@commure.com\tDo Not Recon\tSekander MD Tajwar Shaan\tsekander.shaan@commure.com\t01886796966\tMd Muhaiminur Rahman\tmdmuhaiminur.rahman@commure.com\n` +
-        `7/22/2026 18:42:35\tsadman.karim@commure.com\tMavericks\tSadman Sami Karim\tsadman.karim@commure.com\t01861504510\tNiloy Sarker Pranto\tniloysarker.pranto@commure.com\n` +
-        `7/22/2026 19:37:18\tsakib.ahmed@commure.com\tJohn Cena\tSakib Ahmed\tsakib.ahmed@commure.com\t01331223787\tMohammad Rafa Imtiaz\trafa.imtiaz@commure.com`;
-        
-        document.getElementById('paste-box').value = sample;
-        parseGoogleFormData(sample);
+    /* 🟢 MANUAL SINGLE TEAM ADDITION */
+    function addSingleManualTeam() {
+        let tInput = document.getElementById('manualTeamName');
+        let p1Input = document.getElementById('manualP1');
+        let p2Input = document.getElementById('manualP2');
+
+        let tName = tInput.value.trim().toUpperCase();
+        let p1 = p1Input.value.trim().toUpperCase();
+        let p2 = p2Input.value.trim().toUpperCase();
+
+        if (!tName) return alert("Please enter Team Name!");
+
+        let players = (p1 && p2) ? `${p1} & ${p2}` : (p1 ? p1 : "PLAYER 1 & PLAYER 2");
+
+        activeTeams.push({ name: tName, players: players });
+        drawState.teamPlayersMap[tName] = players;
+
+        tInput.value = ''; p1Input.value = ''; p2Input.value = '';
+        renderChecklist();
+    }
+
+    function removeTeam(idx) {
+        activeTeams.splice(idx, 1);
+        renderChecklist();
     }
 
     function renderChecklist() {
         const grid = document.getElementById('team-checklist');
         grid.innerHTML = '';
-        activeTeams.forEach((t, i) => {
-            grid.innerHTML += `<div class="checklist-item"><span><b>${i+1}.</b> <strong style="color:var(--gold-light);">${t.name}</strong> <small>(${t.players})</small></span></div>`;
-        });
+        if (activeTeams.length === 0) {
+            grid.innerHTML = `<div style="text-align:center; color:#94a3b8; padding:20px; width:100%;">No teams loaded yet. Use the buttons above.</div>`;
+        } else {
+            activeTeams.forEach((t, i) => {
+                grid.innerHTML += `<div class="checklist-item">
+                    <span><b>${i+1}.</b> <strong style="color:var(--gold-light);">${t.name}</strong> <small>(${t.players})</small></span>
+                    <button class="btn btn-danger btn-small" style="padding:2px 6px; font-size:9px;" onclick="removeTeam(${i})">❌</button>
+                </div>`;
+            });
+        }
         document.getElementById('selected-count').innerText = activeTeams.length;
     }
 
-    /* AUTHENTICATION MODALS */
+    /* AUTHENTICATION & MODALS */
     function openPassModal() {
         if (isAdmin) {
             isAdmin = false;
