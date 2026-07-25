@@ -337,7 +337,7 @@
 <div class="container">
     <div class="header">
         <div class="admin-controls-top">
-            <span class="sync-badge" id="sync-status">🟢 Live Cloud Synced</span>
+            <span class="sync-badge" id="sync-status">☁️ Connecting...</span>
             <button class="admin-btn" id="admin-login-btn" onclick="openPassModal()">🔒 Admin Login</button>
         </div>
         <h1>🏓 BD RCM Table Tennis Tournament 2026</h1>
@@ -548,20 +548,20 @@
 
         if (FIREBASE_DB_URL) {
             try {
-                firebase.initializeApp({
-                    databaseURL: FIREBASE_DB_URL,
-                    projectId: "bd-rcm-tt-2026"
-                });
+                // Initialize using standard simple DB URL
+                firebase.initializeApp({ databaseURL: FIREBASE_DB_URL });
                 db = firebase.database().ref("tournament_state");
 
+                // Check active connection status instantly
                 firebase.database().ref(".info/connected").on("value", (snap) => {
                     if (snap.val() === true) {
                         document.getElementById('sync-status').innerText = '🟢 Live Cloud Synced';
                     } else {
-                        document.getElementById('sync-status').innerText = '🟢 Live Cloud Synced';
+                        document.getElementById('sync-status').innerText = '🔴 Offline / Connecting...';
                     }
                 });
 
+                // Listen for live data updates
                 db.on('value', (snapshot) => {
                     const data = snapshot.val();
                     if (data) {
@@ -572,8 +572,8 @@
                     document.getElementById('sync-status').innerText = '🟢 Live Cloud Synced';
                 });
             } catch(e) {
-                console.error(e);
-                document.getElementById('sync-status').innerText = '🟢 Live Cloud Synced';
+                console.error("Firebase init error:", e);
+                document.getElementById('sync-status').innerText = '☁️ Local Fallback Mode';
             }
         }
     };
@@ -692,6 +692,7 @@
         let textarea = document.getElementById('paste-box');
         let text = textarea.value.trim();
 
+        // 1. Fetch from clipboard if text area is empty
         if (!text && navigator.clipboard && navigator.clipboard.readText) {
             try {
                 text = await navigator.clipboard.readText();
@@ -699,13 +700,13 @@
                     textarea.value = text;
                 }
             } catch (err) {
-                console.warn("Clipboard permission required or unavailable:", err);
+                console.warn("Clipboard access denied/unavailable:", err);
             }
         }
 
         text = textarea.value.trim();
         if (!text) {
-            return alert("⚠️ No data found! Please copy team rows from Google Sheets first, or paste directly into the box.");
+            return alert("⚠️ No data found! Please copy rows from Google Sheets or paste them directly into the text box.");
         }
 
         let lines = text.split('\n');
@@ -715,37 +716,40 @@
             let cleanLine = line.trim();
             if (!cleanLine) return;
 
-            // Split by Tab (Google Sheets copy) or Comma
-            let cols = cleanLine.includes('\t') ? cleanLine.split('\t') : cleanLine.split(',');
-            cols = cols.map(c => c.trim()).filter(c => c !== "");
+            // Split by Tab OR 2+ consecutive spaces OR Commas
+            let cols = cleanLine.split(/\t| {2,}|,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+            cols = cols.map(c => c.replace(/^"|"$/g, '').trim()).filter(c => c !== "");
 
-            if (cols.length === 0) return;
+            if (cols.length < 2) return;
 
-            // Skip Header Rows
-            let fullRowStr = cleanLine.toLowerCase();
-            if (fullRowStr.includes("timestamp") || fullRowStr.includes("team name") || fullRowStr.includes("sl no")) {
+            // Skip headers safely
+            let fullRowStr = cols.join(" ").toLowerCase();
+            if (fullRowStr.includes("timestamp") || fullRowStr.includes("sl no") || fullRowStr.includes("team name")) {
                 return;
             }
 
-            let tName = "";
-            let p1 = "";
-            let p2 = "";
+            let tName = "", p1 = "", p2 = "";
 
-            // Filter out emails, numbers, and long agreement text from candidates
-            let nonEmailCols = cols.filter(c => 
-                !c.includes('@') && 
-                !/^\d+$/.test(c) && 
-                !c.toLowerCase().includes("rulebook") &&
-                !c.toLowerCase().includes("professional bat") &&
-                !c.toLowerCase().includes("acknowledge") &&
-                !c.includes('/')
-            );
+            if (cols.length >= 6) {
+                // Find anchor by email to strictly pinpoint names
+                let firstEmailIdx = cols.findIndex(c => c.includes('@'));
+                if (firstEmailIdx !== -1) {
+                    tName = cols[firstEmailIdx + 1] || "Unknown Team";
+                    p1 = cols[firstEmailIdx + 2] || "Player 1";
+                    p2 = cols[firstEmailIdx + 5] || "Player 2"; 
+                } else {
+                    tName = cols[2] || cols[0];
+                    p1 = cols[3] || cols[1];
+                    p2 = cols[6] || cols[2];
+                }
+            } else {
+                // Fallback for smaller strings
+                tName = cols[0];
+                p1 = cols[1] || "";
+                p2 = cols[2] || "";
+            }
 
-            if (nonEmailCols.length >= 1) tName = nonEmailCols[0];
-            if (nonEmailCols.length >= 2) p1 = nonEmailCols[1];
-            if (nonEmailCols.length >= 3) p2 = nonEmailCols[2];
-
-            if (tName) {
+            if (tName && !tName.includes('@')) {
                 let nameUpper = tName.toUpperCase();
                 let playersUpper = (p1 && p2) ? `${p1} & ${p2}`.toUpperCase() : (p1 ? p1.toUpperCase() : "PLAYER 1 & PLAYER 2");
                 
@@ -759,7 +763,7 @@
             renderChecklist();
             alert(`✅ Successfully loaded ${parsed.length} teams!`);
         } else {
-            alert("❌ Could not parse team data. Please check your copied Google Sheets rows.");
+            alert("❌ Could not parse team data. Please ensure you copied standard rows from Google Sheets.");
         }
     }
 
