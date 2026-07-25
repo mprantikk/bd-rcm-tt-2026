@@ -9,9 +9,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-    <!-- SheetJS CDN for CSV & Excel File Uploading -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Oswald:wght@600;700&display=swap');
 
@@ -125,7 +122,6 @@
             margin: 10px auto; display: block; box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
         }
 
-        /* ADMIN ONLY VISIBILITY CONTROL */
         .admin-only { display: none !important; }
         body.is-admin .admin-only { display: inline-block !important; }
         body.is-admin div.admin-only { display: block !important; }
@@ -165,10 +161,6 @@
         .team-badge { background: var(--navy-card); border-left: 3px solid var(--commure-teal); padding: 6px 8px; margin-bottom: 5px; border-radius: 0 5px 5px 0; text-align: left; }
         .team-title { font-family: 'Oswald', sans-serif; font-size: 13px; color: var(--gold-light); }
         .player-names { font-size: 9px; color: #cbd5e1; }
-
-        .scoreboard-grid { display: grid; grid-template-columns: 1fr 100px 1fr; gap: 12px; align-items: center; text-align: center; }
-        .team-box { background: #0f172a; border: 2px solid var(--gold); border-radius: 12px; padding: 15px; position: relative; }
-        .point-display { font-family: 'Oswald', sans-serif; font-size: 70px; color: #ffffff; line-height: 1; margin: 8px 0; }
 
         .schedule-table, .points-table { 
             width: 100%; border-collapse: collapse; margin-top: 5px; margin-bottom: 15px; 
@@ -210,7 +202,6 @@
             justify-content: space-between; align-items: center; font-weight: 600; color: #ffffff; font-size: 9px;
         }
 
-        /* MODAL STYLING FOR MASKED PASSWORDS */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.85); z-index: 999; display: none;
@@ -291,21 +282,21 @@
             <h3>Step 1: Load 32 Teams & Start Draw</h3>
             
             <div style="max-width:600px; margin:0 auto;">
-                <textarea id="paste-box" class="paste-area" placeholder="Paste 32 team rows from Google Sheets or Excel..."></textarea>
+                <textarea id="paste-box" class="paste-area" placeholder="Paste 32 team rows from Google Sheets, Excel, or CSV..."></textarea>
                 
-                <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 10px;">
-                    <button class="btn btn-teal btn-small" onclick="parsePastedData()">📋 Load From Textbox / Clipboard</button>
+                <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 10px; flex-wrap: wrap;">
+                    <button class="btn btn-teal btn-small" onclick="parsePastedData()">📋 Load From Textbox</button>
                     
-                    <!-- CSV / Excel File Uploader Button -->
+                    <!-- CSV / Text File Upload Button -->
                     <label class="btn btn-purple btn-small" style="cursor: pointer; display: inline-block; margin: 2px;">
-                        📁 Upload CSV / Excel File
-                        <input type="file" id="fileUploader" accept=".csv, .xlsx, .xls" style="display: none;" onchange="handleFileUpload(event)">
+                        📁 Upload CSV / TSV File
+                        <input type="file" id="fileUploader" accept=".csv, .tsv, .txt" style="display: none;" onchange="handleFileUpload(event)">
                     </label>
                 </div>
             </div>
 
             <div class="checklist-grid" id="team-checklist">
-                <div style="text-align:center; color:#94a3b8; padding:20px; width:100%;">No teams loaded yet. Paste rows or upload CSV/Excel above.</div>
+                <div style="text-align:center; color:#94a3b8; padding:20px; width:100%;">No teams loaded yet. Paste rows or upload a CSV file above.</div>
             </div>
 
             <p style="font-size:15px;">Selected Teams: <span id="selected-count" style="color:var(--gold-light); font-weight:bold;">0</span> / 32</p>
@@ -322,18 +313,18 @@
         </div>
     </div>
 
-    <!-- TAB 2: SCHEDULE & MATCH LAUNCHER -->
+    <!-- TAB 2: SCHEDULE -->
     <div id="section-schedule" style="display:none;">
         <div class="card">
-            <h3 style="color:var(--gold-light); text-align:center; font-family:'Oswald'; margin:0; font-size:22px; letter-spacing:1px;">📅 OFFICIAL MATCH SCHEDULE</h3>
+            <h3 style="color:var(--gold-light); text-align:center; font-family:'Oswald'; margin:0; font-size:22px;">📅 OFFICIAL MATCH SCHEDULE</h3>
             <div id="schedule-container"></div>
         </div>
     </div>
 
-    <!-- TAB 3: VISUAL KNOCKOUT BRACKET -->
+    <!-- TAB 3: VISUAL BRACKET -->
     <div id="section-bracket" style="display:none;">
         <div class="card" style="padding:10px;">
-            <h3 style="color:var(--gold-light); text-align:center; font-family:'Oswald'; margin:0 0 15px 0; font-size:20px; letter-spacing:2px;">🏆 KNOCKOUT BRACKET - ROAD TO GLORY</h3>
+            <h3 style="color:var(--gold-light); text-align:center; font-family:'Oswald'; margin:0 0 15px 0;">🏆 KNOCKOUT BRACKET</h3>
             <div class="bracket-wrapper" id="bracket-container"></div>
         </div>
     </div>
@@ -341,7 +332,7 @@
     <!-- TAB 4: POINTS TABLE -->
     <div id="section-points" style="display:none;">
         <div class="card">
-            <h3 style="color:var(--gold-light); text-align:center; font-family:'Oswald'; margin:0; font-size:22px; letter-spacing:1px;">📊 GROUP STAGE STANDINGS</h3>
+            <h3 style="color:var(--gold-light); text-align:center; font-family:'Oswald'; margin:0;">📊 GROUP STAGE STANDINGS</h3>
             <div id="points-table-container"></div>
         </div>
     </div>
@@ -364,7 +355,6 @@
             </div>
 
             <button class="btn btn-teal admin-only" style="width:100%; margin-top:15px;" onclick="startLiveScoring()">🚀 Start Match Scoring</button>
-            <div class="spectator-msg" style="color:#64748b; font-size:12px; font-style:italic; margin-top:10px; text-align:center;">Admin Login required to start scoring controls</div>
         </div>
     </div>
 </div>
@@ -389,16 +379,11 @@
     const groupKeys = ['A','B','C','D','E','F','G','H'];
 
     window.onload = function() {
-        // Load local cache immediately so UI doesn't wait
         let saved = localStorage.getItem('bd_rcm_tt_2026');
         if (saved) {
-            try {
-                drawState = JSON.parse(saved);
-                refreshUI();
-            } catch(e) {}
+            try { drawState = JSON.parse(saved); refreshUI(); } catch(e) {}
         }
 
-        // Always ensure sync badge displays active state
         document.getElementById('sync-status').innerText = '🟢 Live Cloud Synced';
 
         if (FIREBASE_DB_URL) {
@@ -414,131 +399,65 @@
                         refreshUI();
                     }
                 });
-            } catch(e) {
-                console.warn("Firebase fallback active:", e);
-            }
+            } catch(e) { console.warn(e); }
         }
     };
 
-    /* FILE UPLOADER FOR CSV / EXCEL (.xlsx, .xls, .csv) */
-    function handleFileUpload(event) {
-        let file = event.target.files[0];
-        if (!file) return;
+    /* 🟢 UNIVERSAL REGEX PARSER FOR TEXT, TSV, AND CSV DATA */
+    function processRawTextData(text) {
+        if (!text || !text.trim()) return alert("⚠️ No text found to parse!");
 
-        let reader = new FileReader();
-        reader.onload = function(e) {
-            let data = new Uint8Array(e.target.result);
-            let workbook = XLSX.read(data, { type: 'array' });
-            let firstSheetName = workbook.SheetNames[0];
-            let worksheet = workbook.Sheets[firstSheetName];
-            
-            // Convert worksheet to JSON array of objects
-            let jsonRows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
-
-            if (jsonRows.length === 0) {
-                return alert("⚠️ The uploaded file is empty!");
-            }
-
-            let parsed = [];
-
-            jsonRows.forEach(row => {
-                // Search keys flexibly for Team Name, Player 1, Player 2
-                let tName = "", p1 = "", p2 = "";
-
-                Object.keys(row).forEach(key => {
-                    let kLower = key.toLowerCase().trim();
-                    let val = String(row[key]).trim();
-
-                    if (kLower.includes("team name")) tName = val;
-                    if (kLower.includes("player 1 name") || (kLower.includes("player 1") && !kLower.includes("email") && !kLower.includes("contact"))) p1 = val;
-                    if (kLower.includes("player 2 name") || (kLower.includes("player 2") && !kLower.includes("email") && !kLower.includes("contact"))) p2 = val;
-                });
-
-                // Fallback column index checks if headers weren't named standardly
-                let values = Object.values(row).map(v => String(val = v).trim()).filter(v => v !== "");
-                if (!tName && values.length >= 4) tName = values[3] || values[0];
-                if (!p1 && values.length >= 5) p1 = values[4] || values[1];
-                if (!p2 && values.length >= 8) p2 = values[7] || values[2];
-
-                if (tName) {
-                    let nameUpper = tName.toUpperCase();
-                    let playersUpper = (p1 && p2) ? `${p1} & ${p2}`.toUpperCase() : (p1 ? p1.toUpperCase() : "PLAYER 1 & PLAYER 2");
-
-                    parsed.push({ name: nameUpper, players: playersUpper });
-                    drawState.teamPlayersMap[nameUpper] = playersUpper;
-                }
-            });
-
-            if (parsed.length > 0) {
-                activeTeams = parsed;
-                renderChecklist();
-                alert(`✅ Successfully imported ${parsed.length} teams from ${file.name}!`);
-            } else {
-                alert("❌ Could not detect team columns. Please check your Excel/CSV format.");
-            }
-        };
-
-        reader.readAsArrayBuffer(file);
-    }
-
-    /* DIRECT CLIPBOARD & TEXTBOX PARSER */
-    async function parsePastedData() {
-        let textarea = document.getElementById('paste-box');
-        let text = textarea.value.trim();
-
-        if (!text && navigator.clipboard && navigator.clipboard.readText) {
-            try {
-                text = await navigator.clipboard.readText();
-                if (text) textarea.value = text;
-            } catch (err) {}
-        }
-
-        text = textarea.value.trim();
-        if (!text) {
-            return alert("⚠️ Please paste rows into the box or click 'Upload CSV / Excel File'!");
-        }
-
-        let lines = text.split(/\r?\n/);
+        // Detect timestamp occurrences to split rows cleanly regardless of broken newlines
+        let timestampRegex = /(?=\d{1,2}\/\d{1,2}\/\d{4})/g;
+        let rows = text.split(timestampRegex);
+        
         let parsed = [];
 
-        lines.forEach((line) => {
-            let cleanLine = line.trim();
-            if (!cleanLine) return;
+        rows.forEach(rowStr => {
+            let cleanRow = rowStr.trim();
+            if (!cleanRow || cleanRow.toLowerCase().includes("timestamp") || cleanRow.toLowerCase().includes("agreement")) return;
 
-            // Split by tab, comma, or double spaces
-            let cols = cleanLine.includes('\t') ? cleanLine.split('\t') : cleanLine.split(/\s{2,}|,/);
-            cols = cols.map(c => c.replace(/^"|"$/g, '').trim()).filter(c => c !== "");
-
-            if (cols.length < 2) return;
-
-            let fullRowStr = cleanLine.toLowerCase();
-            if (fullRowStr.includes("timestamp") || fullRowStr.includes("team name")) return;
+            // Extract all email addresses to use as anchor points
+            let emails = cleanRow.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
 
             let tName = "", p1 = "", p2 = "";
 
-            // Smart detection based on standard Google Forms export structure
-            let emails = cols.filter(c => c.includes('@'));
-            if (emails.length >= 1) {
-                let email1Idx = cols.indexOf(emails[0]);
-                tName = cols[email1Idx + 1] || "";
-                p1 = cols[email1Idx + 2] || "";
-                
-                if (emails.length >= 2) {
-                    let email2Idx = cols.indexOf(emails[1]);
-                    p2 = cols[email2Idx + 2] || cols[email2Idx + 1] || "";
-                }
-            }
+            if (emails.length >= 2) {
+                let e1 = emails[0];
+                let e2 = emails[1];
 
-            if (!tName) {
-                tName = cols[3] || cols[2] || cols[0];
-                p1 = cols[4] || cols[3] || cols[1];
-                p2 = cols[7] || cols[6] || cols[2];
+                // Team Name sits right between Email 1 and Player 1 Name, OR right after Email 1
+                let afterE1 = cleanRow.substring(cleanRow.indexOf(e1) + e1.length).trim();
+                
+                // Remove contact numbers and boilerplate text
+                let segments = afterE1.split(/\t|\n|\s{2,}|,/);
+                segments = segments.map(s => s.replace(/^"|"$/g, '').trim()).filter(s => 
+                    s !== "" && 
+                    !/^\+?\d{8,15}$/.test(s) && 
+                    !s.includes('@') && 
+                    !s.toLowerCase().includes("rulebook") &&
+                    !s.toLowerCase().includes("professional bat") &&
+                    !s.toLowerCase().includes("acknowledge") &&
+                    !s.toLowerCase().includes("facility team")
+                );
+
+                if (segments.length >= 1) tName = segments[0];
+                if (segments.length >= 2) p1 = segments[1];
+                if (segments.length >= 3) p2 = segments[2];
+            } else {
+                // Standard TSV / CSV split fallback
+                let cols = cleanRow.split(/\t|,/).map(c => c.replace(/^"|"$/g, '').trim()).filter(c => c !== "");
+                if (cols.length >= 4) {
+                    tName = cols[3] || cols[2] || cols[0];
+                    p1 = cols[4] || cols[3] || cols[1];
+                    p2 = cols[7] || cols[6] || cols[2];
+                }
             }
 
             if (tName && !tName.includes('@')) {
                 let nameUpper = tName.toUpperCase();
                 let playersUpper = (p1 && p2) ? `${p1} & ${p2}`.toUpperCase() : (p1 ? p1.toUpperCase() : "PLAYER 1 & PLAYER 2");
-                
+
                 parsed.push({ name: nameUpper, players: playersUpper });
                 drawState.teamPlayersMap[nameUpper] = playersUpper;
             }
@@ -549,8 +468,41 @@
             renderChecklist();
             alert(`✅ Successfully loaded ${parsed.length} teams!`);
         } else {
-            alert("❌ Parsing raw text failed. Try using the 'Upload CSV / Excel File' button instead!");
+            alert("❌ Could not parse team data. Please ensure the pasted text contains Google Form responses.");
         }
+    }
+
+    /* 📋 LOAD FROM TEXTBOX / CLIPBOARD */
+    async function parsePastedData() {
+        let textarea = document.getElementById('paste-box');
+        let text = textarea.value.trim();
+
+        if (!text && navigator.clipboard && navigator.clipboard.readText) {
+            try {
+                text = await navigator.clipboard.readText();
+                if (text) textarea.value = text;
+            } catch(e) {}
+        }
+
+        text = textarea.value.trim();
+        processRawTextData(text);
+    }
+
+    /* 📁 LOCAL CSV / TSV FILE UPLOADER */
+    function handleFileUpload(event) {
+        let file = event.target.files[0];
+        if (!file) return;
+
+        let reader = new FileReader();
+        reader.onload = function(e) {
+            let fileContent = e.target.result;
+            document.getElementById('paste-box').value = fileContent;
+            processRawTextData(fileContent);
+        };
+        reader.readAsText(file);
+        
+        // Reset file input so re-selecting the same file fires onchange
+        event.target.value = '';
     }
 
     function renderChecklist() {
@@ -562,7 +514,7 @@
         document.getElementById('selected-count').innerText = activeTeams.length;
     }
 
-    /* AUTHENTICATION MODALS */
+    /* AUTHENTICATION & MODALS */
     function openPassModal() {
         if (isAdmin) {
             isAdmin = false;
@@ -633,9 +585,7 @@
 
     function saveState() {
         localStorage.setItem('bd_rcm_tt_2026', JSON.stringify(drawState));
-        if (db) {
-            try { db.set(drawState); } catch(e) {}
-        }
+        if (db) { try { db.set(drawState); } catch(e) {} }
         document.getElementById('sync-status').innerText = '🟢 Live Cloud Synced';
     }
 
@@ -667,7 +617,7 @@
 
     function startOfficialDraw() {
         if (!isAdmin) return alert('Admin mode required!');
-        if (activeTeams.length === 0) return alert("Please load or upload teams first!");
+        if (activeTeams.length === 0) return alert("Please load teams first!");
 
         let target = 32, dIdx = 1;
         while (activeTeams.length < target) {
