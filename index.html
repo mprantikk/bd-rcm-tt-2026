@@ -53,8 +53,12 @@
             font-weight: 700;
         }
 
-        .admin-toggle-btn {
+        .admin-controls-top {
             position: absolute; top: 0; right: 0;
+            display: flex; gap: 8px;
+        }
+
+        .admin-toggle-btn {
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid var(--gold); color: var(--gold-light);
             padding: 5px 12px; border-radius: 20px; font-size: 11px;
@@ -212,52 +216,53 @@
         }
 
         /* ------------------------------------------------------------------ */
-        /* 100% FIT-TO-SCREEN NO-SCROLL SYMMETRICAL KNOCKOUT BRACKET         */
+        /* BULLETPROOF PURE-CSS CONNECTED BRACKET (100% FIT NO SCROLL)        */
         /* ------------------------------------------------------------------ */
         .bracket-wrapper {
-            display: flex;
-            width: 100%;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
             align-items: center;
-            padding: 15px 5px;
-            position: relative;
+            padding: 25px 10px 15px 10px;
             background: radial-gradient(circle at center, #111a2e 0%, #060b17 100%);
-            border-radius: 10px;
+            border-radius: 12px;
             border: 1px solid rgba(223, 177, 91, 0.3);
-            box-sizing: border-box;
+            width: 100%;
         }
 
         .bracket-column {
             display: flex;
             flex-direction: column;
             justify-content: space-around;
-            flex: 1;
-            max-width: 13.5%;
-            height: 600px;
-            z-index: 2;
+            height: 560px;
+            position: relative;
         }
 
         .col-header {
             font-family: 'Oswald', sans-serif;
-            font-size: 10px;
+            font-size: 11px;
             color: var(--commure-teal);
             letter-spacing: 1px;
             text-align: center;
             text-transform: uppercase;
             font-weight: 700;
-            margin-bottom: 5px;
+            position: absolute;
+            top: -22px;
+            width: 100%;
         }
 
         .bracket-card {
-            background: rgba(30, 41, 59, 0.9);
-            border: 1px solid rgba(0, 210, 255, 0.4);
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid rgba(0, 210, 255, 0.45);
             border-radius: 6px;
-            padding: 4px;
-            font-size: 9px;
+            padding: 5px;
+            font-size: 9.5px;
             cursor: pointer;
             transition: all 0.2s ease;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
             width: 100%;
+            position: relative;
+            z-index: 2;
         }
 
         .bracket-card:hover {
@@ -266,7 +271,7 @@
             box-shadow: 0 0 15px rgba(223, 177, 91, 0.5);
         }
 
-        .bracket-card.right-side { border-color: rgba(223, 177, 91, 0.4); }
+        .bracket-card.right-side { border-color: rgba(223, 177, 91, 0.5); }
 
         .bracket-header {
             display: flex;
@@ -279,8 +284,8 @@
 
         .bracket-team {
             background: rgba(15, 23, 42, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 4px 5px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 4px 6px;
             border-radius: 4px;
             margin: 2px 0;
             display: flex;
@@ -301,7 +306,7 @@
         .bracket-team.winner {
             background: linear-gradient(90deg, rgba(34, 197, 94, 0.4), rgba(34, 197, 94, 0.15));
             color: #ffffff;
-            border-left: 2px solid #22c55e;
+            border-left: 3px solid #22c55e;
             font-weight: 700;
         }
 
@@ -310,7 +315,7 @@
             color: #22c55e;
             font-weight: bold;
             font-size: 10px;
-            margin-left: 3px;
+            margin-left: 2px;
         }
 
         .bracket-team.loser { opacity: 0.3; }
@@ -320,17 +325,15 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            flex: 1.2;
-            max-width: 17%;
-            height: 600px;
+            height: 560px;
             z-index: 2;
         }
 
         .center-trophy {
-            width: 100px; height: 100px;
+            width: 90px; height: 90px;
             filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
             animation: orbPulse 2.5s infinite ease-in-out;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         select, input[type="text"] {
@@ -343,7 +346,9 @@
 
 <div class="container">
     <div class="header">
-        <button class="admin-toggle-btn" id="admin-toggle-btn" onclick="toggleAdminMode()">🔒 Admin Login</button>
+        <div class="admin-controls-top">
+            <button class="admin-toggle-btn" id="admin-toggle-btn" onclick="toggleAdminMode()">🔒 Admin Login</button>
+        </div>
         <h1>🏓 BD RCM Table Tennis Tournament 2026</h1>
         <h2>Master Tournament & Live Scoreboard Hub</h2>
         <div class="venue-badge">📍 Venue: 8th Floor, Cafeteria Premises, Spectra</div>
@@ -412,7 +417,7 @@
         </div>
     </div>
 
-    <!-- TAB 3: VISUAL KNOCKOUT BRACKET (100% FIT NO-SCROLL) -->
+    <!-- TAB 3: VISUAL KNOCKOUT BRACKET (100% PERFECT FIT NO SCROLL) -->
     <div id="section-bracket" style="display:none;">
         <div class="card" style="padding:10px;">
             <h3 style="color:var(--gold-light); text-align:center; font-family:'Oswald'; margin:0 0 15px 0; font-size:20px; letter-spacing:2px;">🏆 KNOCKOUT BRACKET - ROAD TO GLORY</h3>
@@ -514,10 +519,8 @@
 
 <script>
     const PASSCODE = "2441139";
-    const JSONBIN_BIN_ID = "66f1b1f1e41b4d34e437018c"; // Public Shared Cloud Storage Key
-    const JSONBIN_API_KEY = "$2a$10$89.J2S0U4Jk5g2lQ9s/3O.P1R64L6W0X1T5O5Z2M6b4U8K9N0S1Z6";
-
     let isAdmin = false;
+
     let activeTeams = [];
     let drawState = {
         isComplete: false,
@@ -541,10 +544,6 @@
     const groupKeys = ['A','B','C','D','E','F','G','H'];
 
     window.onload = function() {
-        fetchCloudData();
-    };
-
-    function fetchCloudData() {
         let saved = localStorage.getItem('bd_rcm_tt_2026');
         if (saved) {
             drawState = JSON.parse(saved);
@@ -552,7 +551,7 @@
                 showDrawLockedView();
             }
         }
-    }
+    };
 
     function saveState() {
         localStorage.setItem('bd_rcm_tt_2026', JSON.stringify(drawState));
@@ -921,7 +920,7 @@
         }
     }
 
-    /* 100% FIT-TO-SCREEN PERFECT SYMMETRICAL KNOCKOUT BRACKET RENDERER */
+    /* BULLETPROOF 100% SCREEN-FIT KNOCKOUT BRACKET RENDERER */
     function renderVisualBracket() {
         if (!drawState.groups['A'] || drawState.groups['A'].length === 0) {
             document.getElementById('bracket-container').innerHTML = `<p style="text-align:center; color:#94a3b8; padding:30px; width:100%;">Perform the Draw first to generate the visual bracket.</p>`;
@@ -990,31 +989,6 @@
         }
 
         let html = `
-            <!-- SVG TREE CONNECTOR LINES OVERLAY (RESPONSIVE PERCENTAGES) -->
-            <svg class="bracket-svg-overlay" viewBox="0 0 1000 600" preserveAspectRatio="none">
-                <!-- LEFT SIDE TREE CONNECTOR LINES -->
-                <path d="M 135 95 H 155 V 155 H 175" fill="none" stroke="rgba(0, 210, 255, 0.6)" stroke-width="2"/>
-                <path d="M 135 225 H 155 V 155 H 175" fill="none" stroke="rgba(0, 210, 255, 0.6)" stroke-width="2"/>
-                <path d="M 135 375 H 155 V 435 H 175" fill="none" stroke="rgba(0, 210, 255, 0.6)" stroke-width="2"/>
-                <path d="M 135 505 H 155 V 435 H 175" fill="none" stroke="rgba(0, 210, 255, 0.6)" stroke-width="2"/>
-                
-                <path d="M 310 155 H 330 V 295 H 350" fill="none" stroke="#dfb15b" stroke-width="2"/>
-                <path d="M 310 435 H 330 V 295 H 350" fill="none" stroke="#dfb15b" stroke-width="2"/>
-                
-                <path d="M 485 295 H 515" fill="none" stroke="#22c55e" stroke-width="2"/>
-
-                <!-- RIGHT SIDE TREE CONNECTOR LINES -->
-                <path d="M 865 95 H 845 V 155 H 825" fill="none" stroke="rgba(0, 210, 255, 0.6)" stroke-width="2"/>
-                <path d="M 865 225 H 845 V 155 H 825" fill="none" stroke="rgba(0, 210, 255, 0.6)" stroke-width="2"/>
-                <path d="M 865 375 H 845 V 435 H 825" fill="none" stroke="rgba(0, 210, 255, 0.6)" stroke-width="2"/>
-                <path d="M 865 505 H 845 V 435 H 825" fill="none" stroke="rgba(0, 210, 255, 0.6)" stroke-width="2"/>
-                
-                <path d="M 690 155 H 670 V 295 H 650" fill="none" stroke="#dfb15b" stroke-width="2"/>
-                <path d="M 690 435 H 670 V 295 H 650" fill="none" stroke="#dfb15b" stroke-width="2"/>
-
-                <path d="M 515 295 H 485" fill="none" stroke="#22c55e" stroke-width="2"/>
-            </svg>
-
             <!-- LEFT ROUND OF 16 -->
             <div class="bracket-column">
                 <div class="col-header">ROUND OF 16</div>
@@ -1049,7 +1023,7 @@
                         </g>
                     </svg>
                 </div>
-                <h4 style="font-family:'Oswald'; color:var(--gold-light); margin:0 0 8px 0; font-size:14px; letter-spacing:2px;">GRAND FINAL</h4>
+                <h4 style="font-family:'Oswald'; color:var(--gold-light); margin:0 0 6px 0; font-size:13px; letter-spacing:1px;">GRAND FINAL</h4>
                 ${createMatchCard(grandFinal[0])}
             </div>
 
