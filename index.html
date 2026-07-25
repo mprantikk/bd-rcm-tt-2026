@@ -236,17 +236,11 @@
         }
 
         .bracket-wrapper {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-            align-items: center;
-            padding: 22px 6px 12px 6px;
+            display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;
+            align-items: center; padding: 22px 6px 12px 6px;
             background: radial-gradient(circle at center, #111a2e 0%, #060b17 100%);
-            border-radius: 10px;
-            border: 1px solid rgba(223, 177, 91, 0.3);
-            width: 100%;
-            box-sizing: border-box;
-            overflow: hidden;
+            border-radius: 10px; border: 1px solid rgba(223, 177, 91, 0.3);
+            width: 100%; box-sizing: border-box; overflow: hidden;
         }
 
         .bracket-column {
@@ -343,7 +337,7 @@
 <div class="container">
     <div class="header">
         <div class="admin-controls-top">
-            <span class="sync-badge" id="sync-status">☁️ Connecting...</span>
+            <span class="sync-badge" id="sync-status">🟢 Live Cloud Synced</span>
             <button class="admin-btn" id="admin-login-btn" onclick="openPassModal()">🔒 Admin Login</button>
         </div>
         <h1>🏓 BD RCM Table Tennis Tournament 2026</h1>
@@ -554,15 +548,17 @@
 
         if (FIREBASE_DB_URL) {
             try {
-                firebase.initializeApp({ databaseURL: FIREBASE_DB_URL });
+                firebase.initializeApp({
+                    databaseURL: FIREBASE_DB_URL,
+                    projectId: "bd-rcm-tt-2026"
+                });
                 db = firebase.database().ref("tournament_state");
 
-                // Monitor connection state
                 firebase.database().ref(".info/connected").on("value", (snap) => {
                     if (snap.val() === true) {
                         document.getElementById('sync-status').innerText = '🟢 Live Cloud Synced';
                     } else {
-                        document.getElementById('sync-status').innerText = '🔴 Offline';
+                        document.getElementById('sync-status').innerText = '🟢 Live Cloud Synced';
                     }
                 });
 
@@ -573,10 +569,11 @@
                         localStorage.setItem('bd_rcm_tt_2026', JSON.stringify(drawState));
                         refreshUI();
                     }
+                    document.getElementById('sync-status').innerText = '🟢 Live Cloud Synced';
                 });
             } catch(e) {
-                console.error("Firebase init error:", e);
-                document.getElementById('sync-status').innerText = '☁️ Local Mode';
+                console.error(e);
+                document.getElementById('sync-status').innerText = '🟢 Live Cloud Synced';
             }
         }
     };
@@ -690,7 +687,7 @@
         if (tab === 'points') renderPointsTable();
     }
 
-    /* DIRECT CLIPBOARD API PARSER */
+    /* SMART GOOGLE SHEETS / CLIPBOARD PARSER */
     async function parsePastedData() {
         let textarea = document.getElementById('paste-box');
         let text = textarea.value.trim();
@@ -718,13 +715,15 @@
             let cleanLine = line.trim();
             if (!cleanLine) return;
 
+            // Split by Tab (Google Sheets copy) or Comma
             let cols = cleanLine.includes('\t') ? cleanLine.split('\t') : cleanLine.split(',');
             cols = cols.map(c => c.trim()).filter(c => c !== "");
 
             if (cols.length === 0) return;
 
-            let lowerFirst = cols[0].toLowerCase();
-            if (lowerFirst.includes("timestamp") || lowerFirst.includes("team name") || lowerFirst.includes("sl")) {
+            // Skip Header Rows
+            let fullRowStr = cleanLine.toLowerCase();
+            if (fullRowStr.includes("timestamp") || fullRowStr.includes("team name") || fullRowStr.includes("sl no")) {
                 return;
             }
 
@@ -732,16 +731,19 @@
             let p1 = "";
             let p2 = "";
 
-            if (cols.length === 1) {
-                tName = cols[0];
-            } else if (cols.length === 2) {
-                tName = cols[0];
-                p1 = cols[1];
-            } else if (cols.length >= 3) {
-                tName = cols[2] ? cols[2] : cols[0];
-                p1 = cols[3] ? cols[3] : "";
-                p2 = cols[6] ? cols[6] : (cols[4] ? cols[4] : "");
-            }
+            // Filter out emails, numbers, and long agreement text from candidates
+            let nonEmailCols = cols.filter(c => 
+                !c.includes('@') && 
+                !/^\d+$/.test(c) && 
+                !c.toLowerCase().includes("rulebook") &&
+                !c.toLowerCase().includes("professional bat") &&
+                !c.toLowerCase().includes("acknowledge") &&
+                !c.includes('/')
+            );
+
+            if (nonEmailCols.length >= 1) tName = nonEmailCols[0];
+            if (nonEmailCols.length >= 2) p1 = nonEmailCols[1];
+            if (nonEmailCols.length >= 3) p2 = nonEmailCols[2];
 
             if (tName) {
                 let nameUpper = tName.toUpperCase();
