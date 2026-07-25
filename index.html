@@ -236,17 +236,11 @@
         }
 
         .bracket-wrapper {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-            align-items: center;
-            padding: 22px 6px 12px 6px;
+            display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;
+            align-items: center; padding: 22px 6px 12px 6px;
             background: radial-gradient(circle at center, #111a2e 0%, #060b17 100%);
-            border-radius: 10px;
-            border: 1px solid rgba(223, 177, 91, 0.3);
-            width: 100%;
-            box-sizing: border-box;
-            overflow: hidden;
+            border-radius: 10px; border: 1px solid rgba(223, 177, 91, 0.3);
+            width: 100%; box-sizing: border-box; overflow: hidden;
         }
 
         .bracket-column {
@@ -563,11 +557,12 @@
                         drawState = data;
                         localStorage.setItem('bd_rcm_tt_2026', JSON.stringify(drawState));
                         refreshUI();
-                        document.getElementById('sync-status').innerText = '☁️ Live Cloud Synced';
                     }
+                    document.getElementById('sync-status').innerText = '☁️ Live Cloud Synced';
                 });
             } catch(e) {
                 console.error(e);
+                document.getElementById('sync-status').innerText = '☁️ Local Fallback';
             }
         }
     };
@@ -686,7 +681,6 @@
         let textarea = document.getElementById('paste-box');
         let text = textarea.value.trim();
 
-        // 1. If textarea is empty, attempt to read directly from System Clipboard
         if (!text && navigator.clipboard && navigator.clipboard.readText) {
             try {
                 text = await navigator.clipboard.readText();
