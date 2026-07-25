@@ -236,11 +236,17 @@
         }
 
         .bracket-wrapper {
-            display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;
-            align-items: center; padding: 22px 6px 12px 6px;
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            align-items: center;
+            padding: 22px 6px 12px 6px;
             background: radial-gradient(circle at center, #111a2e 0%, #060b17 100%);
-            border-radius: 10px; border: 1px solid rgba(223, 177, 91, 0.3);
-            width: 100%; box-sizing: border-box; overflow: hidden;
+            border-radius: 10px;
+            border: 1px solid rgba(223, 177, 91, 0.3);
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
         }
 
         .bracket-column {
@@ -551,6 +557,15 @@
                 firebase.initializeApp({ databaseURL: FIREBASE_DB_URL });
                 db = firebase.database().ref("tournament_state");
 
+                // Monitor connection state
+                firebase.database().ref(".info/connected").on("value", (snap) => {
+                    if (snap.val() === true) {
+                        document.getElementById('sync-status').innerText = '🟢 Live Cloud Synced';
+                    } else {
+                        document.getElementById('sync-status').innerText = '🔴 Offline';
+                    }
+                });
+
                 db.on('value', (snapshot) => {
                     const data = snapshot.val();
                     if (data) {
@@ -558,11 +573,10 @@
                         localStorage.setItem('bd_rcm_tt_2026', JSON.stringify(drawState));
                         refreshUI();
                     }
-                    document.getElementById('sync-status').innerText = '☁️ Live Cloud Synced';
                 });
             } catch(e) {
-                console.error(e);
-                document.getElementById('sync-status').innerText = '☁️ Local Fallback';
+                console.error("Firebase init error:", e);
+                document.getElementById('sync-status').innerText = '☁️ Local Mode';
             }
         }
     };
@@ -645,7 +659,7 @@
         localStorage.setItem('bd_rcm_tt_2026', JSON.stringify(drawState));
         if (db) {
             db.set(drawState).then(() => {
-                document.getElementById('sync-status').innerText = '☁️ Live Cloud Synced';
+                document.getElementById('sync-status').innerText = '🟢 Live Cloud Synced';
             });
         }
     }
@@ -676,7 +690,7 @@
         if (tab === 'points') renderPointsTable();
     }
 
-    /* DIRECT CLIPBOARD API PARSER (NO PASSWORD REQUIRED TO PASTE) */
+    /* DIRECT CLIPBOARD API PARSER */
     async function parsePastedData() {
         let textarea = document.getElementById('paste-box');
         let text = textarea.value.trim();
