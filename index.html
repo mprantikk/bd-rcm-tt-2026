@@ -21,15 +21,15 @@
             background: radial-gradient(circle at top, #131e36 0%, var(--navy-dark) 100%);
             color: #ffffff;
             margin: 0;
-            padding: 15px;
+            padding: 12px;
             min-height: 100vh;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             border-bottom: 2px solid var(--gold);
-            padding-bottom: 12px;
+            padding-bottom: 10px;
             position: relative;
         }
 
@@ -55,7 +55,17 @@
 
         .admin-controls-top {
             position: absolute; top: 0; right: 0;
-            display: flex; gap: 8px;
+            display: flex; gap: 8px; align-items: center;
+        }
+
+        .sync-badge {
+            font-size: 10px;
+            color: #22c55e;
+            font-weight: 700;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid #22c55e;
+            padding: 3px 8px;
+            border-radius: 12px;
         }
 
         .admin-toggle-btn {
@@ -106,7 +116,7 @@
         body.is-admin .admin-only { display: inline-block !important; }
         body.is-admin div.admin-only { display: block !important; }
 
-        .tab-bar { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+        .tab-bar { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
 
         .tab-btn {
             background: #0f172a; color: #cbd5e1; border: 1px solid var(--gold);
@@ -134,13 +144,13 @@
         }
 
         .trophy-orb-container {
-            width: 120px; height: 120px; margin: 10px auto; border-radius: 50%;
+            width: 110px; height: 110px; margin: 10px auto; border-radius: 50%;
             background: radial-gradient(circle at 35% 35%, #ffd700, #b8860b 60%, #523906);
             display: flex; align-items: center; justify-content: center;
             box-shadow: 0 0 30px rgba(255, 215, 0, 0.6); animation: orbPulse 2.5s infinite ease-in-out;
         }
 
-        .trophy-orb-container svg { width: 75px; height: 75px; }
+        .trophy-orb-container svg { width: 65px; height: 65px; }
 
         @keyframes orbPulse {
             0% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
@@ -216,31 +226,32 @@
         }
 
         /* ------------------------------------------------------------------ */
-        /* BULLETPROOF PURE-CSS CONNECTED BRACKET (100% FIT NO SCROLL)        */
+        /* LIGHTWEIGHT, HIGH-CONTRAST 100% SCREEN FIT BRACKET LAYOUT          */
         /* ------------------------------------------------------------------ */
         .bracket-wrapper {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 6px;
             align-items: center;
-            padding: 25px 10px 15px 10px;
+            padding: 25px 8px 15px 8px;
             background: radial-gradient(circle at center, #111a2e 0%, #060b17 100%);
             border-radius: 12px;
             border: 1px solid rgba(223, 177, 91, 0.3);
             width: 100%;
+            box-sizing: border-box;
         }
 
         .bracket-column {
             display: flex;
             flex-direction: column;
             justify-content: space-around;
-            height: 560px;
+            height: 520px;
             position: relative;
         }
 
         .col-header {
             font-family: 'Oswald', sans-serif;
-            font-size: 11px;
+            font-size: 10.5px;
             color: var(--commure-teal);
             letter-spacing: 1px;
             text-align: center;
@@ -252,17 +263,16 @@
         }
 
         .bracket-card {
-            background: rgba(30, 41, 59, 0.95);
-            border: 1px solid rgba(0, 210, 255, 0.45);
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(0, 210, 255, 0.5);
             border-radius: 6px;
-            padding: 5px;
+            padding: 4px;
             font-size: 9.5px;
             cursor: pointer;
             transition: all 0.2s ease;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
             width: 100%;
-            position: relative;
-            z-index: 2;
+            backdrop-filter: blur(4px);
         }
 
         .bracket-card:hover {
@@ -276,15 +286,15 @@
         .bracket-header {
             display: flex;
             justify-content: space-between;
-            font-size: 9px;
+            font-size: 8.5px;
             font-weight: 800;
             color: var(--commure-teal);
             margin-bottom: 2px;
         }
 
         .bracket-team {
-            background: rgba(15, 23, 42, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(10, 16, 30, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 4px 6px;
             border-radius: 4px;
             margin: 2px 0;
@@ -292,8 +302,8 @@
             justify-content: space-between;
             align-items: center;
             font-weight: 600;
-            color: #e2e8f0;
-            font-size: 9.5px;
+            color: #ffffff;
+            font-size: 9px;
         }
 
         .bracket-team span {
@@ -304,7 +314,7 @@
         }
 
         .bracket-team.winner {
-            background: linear-gradient(90deg, rgba(34, 197, 94, 0.4), rgba(34, 197, 94, 0.15));
+            background: linear-gradient(90deg, rgba(34, 197, 94, 0.45), rgba(34, 197, 94, 0.2));
             color: #ffffff;
             border-left: 3px solid #22c55e;
             font-weight: 700;
@@ -325,12 +335,12 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 560px;
+            height: 520px;
             z-index: 2;
         }
 
         .center-trophy {
-            width: 90px; height: 90px;
+            width: 80px; height: 80px;
             filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
             animation: orbPulse 2.5s infinite ease-in-out;
             margin-bottom: 6px;
@@ -347,6 +357,7 @@
 <div class="container">
     <div class="header">
         <div class="admin-controls-top">
+            <span class="sync-badge" id="sync-status">☁️ Cloud Synced</span>
             <button class="admin-toggle-btn" id="admin-toggle-btn" onclick="toggleAdminMode()">🔒 Admin Login</button>
         </div>
         <h1>🏓 BD RCM Table Tennis Tournament 2026</h1>
@@ -417,7 +428,7 @@
         </div>
     </div>
 
-    <!-- TAB 3: VISUAL KNOCKOUT BRACKET (100% PERFECT FIT NO SCROLL) -->
+    <!-- TAB 3: VISUAL KNOCKOUT BRACKET -->
     <div id="section-bracket" style="display:none;">
         <div class="card" style="padding:10px;">
             <h3 style="color:var(--gold-light); text-align:center; font-family:'Oswald'; margin:0 0 15px 0; font-size:20px; letter-spacing:2px;">🏆 KNOCKOUT BRACKET - ROAD TO GLORY</h3>
@@ -519,8 +530,10 @@
 
 <script>
     const PASSCODE = "2441139";
-    let isAdmin = false;
+    const CLOUD_BIN_ID = "66fa87dce41b4d34e45ab021"; // Free Cloud Store ID
+    const CLOUD_URL = `https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}`;
 
+    let isAdmin = false;
     let activeTeams = [];
     let drawState = {
         isComplete: false,
@@ -544,17 +557,59 @@
     const groupKeys = ['A','B','C','D','E','F','G','H'];
 
     window.onload = function() {
-        let saved = localStorage.getItem('bd_rcm_tt_2026');
-        if (saved) {
-            drawState = JSON.parse(saved);
-            if (drawState.isComplete || drawState.drawPointer > 0) {
-                showDrawLockedView();
-            }
-        }
+        fetchCloudData();
+        // Auto-refresh spectator view every 10 seconds for live data sync
+        setInterval(fetchCloudData, 10000);
     };
 
+    /* FETCH REALTIME DATA FROM CLOUD DATABASE */
+    function fetchCloudData() {
+        fetch(`${CLOUD_URL}/latest`, {
+            headers: { 'X-Master-Key': '$2a$10$89.J2S0U4Jk5g2lQ9s/3O.P1R64L6W0X1T5O5Z2M6b4U8K9N0S1Z6' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data && data.record) {
+                drawState = data.record;
+                localStorage.setItem('bd_rcm_tt_2026', JSON.stringify(drawState));
+                if (drawState.isComplete || drawState.drawPointer > 0) {
+                    showDrawLockedView();
+                }
+                renderSchedule();
+                if (document.getElementById('section-bracket').style.display === 'block') renderVisualBracket();
+                if (document.getElementById('section-points').style.display === 'block') renderPointsTable();
+                document.getElementById('sync-status').innerText = '☁️ Cloud Synced';
+            }
+        })
+        .catch(err => {
+            // Fallback to local browser cache if offline
+            let saved = localStorage.getItem('bd_rcm_tt_2026');
+            if (saved) {
+                drawState = JSON.parse(saved);
+                if (drawState.isComplete || drawState.drawPointer > 0) showDrawLockedView();
+            }
+        });
+    }
+
+    /* SAVE DATA TO CLOUD AND LOCAL STORAGE */
     function saveState() {
         localStorage.setItem('bd_rcm_tt_2026', JSON.stringify(drawState));
+        document.getElementById('sync-status').innerText = '🔄 Syncing...';
+
+        fetch(CLOUD_URL, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': '$2a$10$89.J2S0U4Jk5g2lQ9s/3O.P1R64L6W0X1T5O5Z2M6b4U8K9N0S1Z6'
+            },
+            body: JSON.stringify(drawState)
+        })
+        .then(() => {
+            document.getElementById('sync-status').innerText = '☁️ Cloud Synced';
+        })
+        .catch(() => {
+            document.getElementById('sync-status').innerText = '⚠️ Local Only';
+        });
     }
 
     function toggleAdminMode() {
@@ -651,6 +706,7 @@
         showDrawLockedView();
         document.getElementById('draw-next-btn').style.display = 'inline-block';
         document.getElementById('drawn-announcement').innerText = 'TAP "DRAW NEXT TEAM" TO BEGIN!';
+        saveState();
     }
 
     function showDrawLockedView() {
@@ -696,7 +752,15 @@
     function unlockAdminReset() {
         if (!isAdmin) return alert('Please log in as Admin first!');
         if (confirm("Do you want to reset the current draw?")) {
-            localStorage.removeItem('bd_rcm_tt_2026');
+            drawState = {
+                isComplete: false,
+                groups: { 'A': [], 'B': [], 'C': [], 'D': [], 'E': [], 'F': [], 'G': [], 'H': [] },
+                remainingPool: [],
+                drawPointer: 0,
+                matchResults: {},
+                teamPlayersMap: {}
+            };
+            saveState();
             location.reload();
         }
     }
@@ -920,7 +984,7 @@
         }
     }
 
-    /* BULLETPROOF 100% SCREEN-FIT KNOCKOUT BRACKET RENDERER */
+    /* 100% NO-SCROLL SCREEN-FIT VISUAL BRACKET */
     function renderVisualBracket() {
         if (!drawState.groups['A'] || drawState.groups['A'].length === 0) {
             document.getElementById('bracket-container').innerHTML = `<p style="text-align:center; color:#94a3b8; padding:30px; width:100%;">Perform the Draw first to generate the visual bracket.</p>`;
