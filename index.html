@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BD RCM Table Tennis 2026 - Master Tournament Hub</title>
+    <title>BD RCM Table Tennis Tournament 2026</title>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Oswald:wght@600;700&display=swap');
 
@@ -30,6 +35,7 @@
             margin-bottom: 12px;
             border-bottom: 2px solid var(--gold);
             padding-bottom: 10px;
+            position: relative;
         }
 
         .header h1 {
@@ -50,6 +56,21 @@
             margin-top: 4px;
             margin-bottom: 6px;
             font-weight: 700;
+        }
+
+        .admin-controls-top {
+            position: absolute; top: 0; right: 0;
+            display: flex; gap: 8px; align-items: center;
+        }
+
+        .sync-badge {
+            font-size: 10px;
+            color: #22c55e;
+            font-weight: 700;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid #22c55e;
+            padding: 3px 8px;
+            border-radius: 12px;
         }
 
         .venue-badge {
@@ -198,9 +219,6 @@
             padding-bottom: 4px; text-align: left;
         }
 
-        /* ------------------------------------------------------------------ */
-        /* 100% NO-SCROLL FIT BRACKET LAYOUT                                  */
-        /* ------------------------------------------------------------------ */
         .bracket-wrapper {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -329,6 +347,9 @@
 
 <div class="container">
     <div class="header">
+        <div class="admin-controls-top">
+            <span class="sync-badge" id="sync-status">☁️ Connecting...</span>
+        </div>
         <h1>🏓 BD RCM Table Tennis Tournament 2026</h1>
         <h2>Master Tournament & Live Scoreboard Hub</h2>
         <div class="venue-badge">📍 Venue: 8th Floor, Cafeteria Premises, Spectra</div>
@@ -499,7 +520,11 @@
 
 <script>
     const PASSCODE = "2441139";
+    
+    // YOUR FIREBASE REALTIME DATABASE URL DIRECTLY INTEGRATED HERE:
+    const FIREBASE_DB_URL = "https://bd-rcm-tt-2026-default-rtdb.firebaseio.com/";
 
+    let db = null;
     let activeTeams = [];
     let drawState = {
         isComplete: false,
@@ -523,27 +548,60 @@
     const groupKeys = ['A','B','C','D','E','F','G','H'];
 
     window.onload = function() {
+        // First load from local browser cache for instant rendering
         let saved = localStorage.getItem('bd_rcm_tt_2026');
         if (saved) {
             drawState = JSON.parse(saved);
-            if (drawState.isComplete || drawState.drawPointer > 0) {
-                showDrawLockedView();
+            refreshUI();
+        }
+
+        // Initialize Firebase Realtime Database
+        if (FIREBASE_DB_URL) {
+            try {
+                firebase.initializeApp({ databaseURL: FIREBASE_DB_URL });
+                db = firebase.database().ref("tournament_state");
+
+                // Listen for live updates from Firebase Cloud
+                db.on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        drawState = data;
+                        localStorage.setItem('bd_rcm_tt_2026', JSON.stringify(drawState));
+                        refreshUI();
+                        document.getElementById('sync-status').innerText = '☁️ Realtime Cloud Synced';
+                    }
+                });
+            } catch(e) {
+                console.error("Firebase Connection Error:", e);
+                document.getElementById('sync-status').innerText = '⚠️ Local Mode';
             }
         }
     };
 
     function saveState() {
         localStorage.setItem('bd_rcm_tt_2026', JSON.stringify(drawState));
+        if (db) {
+            db.set(drawState).then(() => {
+                document.getElementById('sync-status').innerText = '☁️ Realtime Cloud Synced';
+            }).catch((err) => {
+                console.error("Database Save Error:", err);
+                document.getElementById('sync-status').innerText = '⚠️ Sync Error';
+            });
+        }
+    }
+
+    function refreshUI() {
+        if (drawState.isComplete || drawState.drawPointer > 0) showDrawLockedView();
+        renderSchedule();
+        if (document.getElementById('section-bracket').style.display === 'block') renderVisualBracket();
+        if (document.getElementById('section-points').style.display === 'block') renderPointsTable();
     }
 
     function verifyPasscode() {
-        let pass = prompt("Enter Admin Passcode (2441139):");
-        if (pass === PASSCODE) {
-            return true;
-        } else {
-            if (pass !== null) alert("❌ Incorrect Passcode!");
-            return false;
-        }
+        let pass = prompt("Enter Password (2441139):");
+        if (pass === PASSCODE) return true;
+        if (pass !== null) alert("❌ Incorrect Password!");
+        return false;
     }
 
     function switchTab(tab) {
@@ -562,6 +620,7 @@
     }
 
     function parsePastedData() {
+        if (!verifyPasscode()) return;
         let text = document.getElementById('paste-box').value.trim();
         if (!text) return alert("Please paste data first!");
 
@@ -592,10 +651,7 @@
         const grid = document.getElementById('team-checklist');
         grid.innerHTML = '';
         activeTeams.forEach((t, i) => {
-            grid.innerHTML += `
-                <div class="checklist-item">
-                    <span><b>${i+1}.</b> <strong style="color:var(--gold-light);">${t.name}</strong> <small>(${t.players})</small></span>
-                </div>`;
+            grid.innerHTML += `<div class="checklist-item"><span><b>${i+1}.</b> <strong style="color:var(--gold-light);">${t.name}</strong> <small>(${t.players})</small></span></div>`;
         });
         document.getElementById('selected-count').innerText = activeTeams.length;
     }
@@ -619,7 +675,6 @@
 
         showDrawLockedView();
         document.getElementById('draw-next-btn').style.display = 'inline-block';
-        document.getElementById('drawn-announcement').innerText = 'TAP "DRAW NEXT TEAM" TO BEGIN!';
         saveState();
     }
 
@@ -632,11 +687,7 @@
         groupKeys.forEach(g => {
             let teamHTML = drawState.groups[g].map((t, idx) => {
                 drawState.teamPlayersMap[t.name] = t.players;
-                return `
-                <div class="team-badge">
-                    <div class="team-title">${idx+1}. ${t.name}</div>
-                    <div class="player-names">${t.players}</div>
-                </div>`;
+                return `<div class="team-badge"><div class="team-title">${idx+1}. ${t.name}</div><div class="player-names">${t.players}</div></div>`;
             }).join('');
 
             container.innerHTML += `<div class="group-card"><div class="group-header">GROUP ${g}</div><div class="team-list">${teamHTML}</div></div>`;
@@ -647,7 +698,6 @@
         if (drawState.remainingPool.length === 0) {
             drawState.isComplete = true;
             saveState();
-            document.getElementById('drawn-announcement').innerText = '🎉 32-TEAM DRAW COMPLETE & LOCKED!';
             document.getElementById('draw-next-btn').style.display = 'none';
             return;
         }
@@ -658,22 +708,13 @@
 
         drawState.drawPointer++;
         saveState();
-
-        document.getElementById('drawn-announcement').innerText = `DRAWN: ${team.name} ➔ GROUP ${targetGroup}`;
         showDrawLockedView();
     }
 
     function unlockAdminReset() {
         if (!verifyPasscode()) return;
         if (confirm("Do you want to reset the current draw?")) {
-            drawState = {
-                isComplete: false,
-                groups: { 'A': [], 'B': [], 'C': [], 'D': [], 'E': [], 'F': [], 'G': [], 'H': [] },
-                remainingPool: [],
-                drawPointer: 0,
-                matchResults: {},
-                teamPlayersMap: {}
-            };
+            drawState = { isComplete: false, groups: { 'A': [], 'B': [], 'C': [], 'D': [], 'E': [], 'F': [], 'G': [], 'H': [] }, remainingPool: [], drawPointer: 0, matchResults: {}, teamPlayersMap: {} };
             saveState();
             location.reload();
         }
@@ -681,7 +722,6 @@
 
     function getGroupWinnersAndRunners() {
         let winners = {}, runners = {};
-
         groupKeys.forEach(g => {
             let teamsInGroup = drawState.groups[g] || [];
             if (teamsInGroup.length === 0) {
@@ -691,9 +731,7 @@
             }
 
             let stats = {};
-            teamsInGroup.forEach(t => {
-                stats[t.name] = { name: t.name, mp: 0, w: 0, l: 0, sw: 0, sl: 0, pts: 0 };
-            });
+            teamsInGroup.forEach(t => { stats[t.name] = { name: t.name, mp: 0, w: 0, l: 0, sw: 0, sl: 0, pts: 0 }; });
 
             let completed = 0;
             Object.keys(drawState.matchResults).forEach(mId => {
@@ -707,26 +745,11 @@
                 }
             });
 
-            let standings = Object.values(stats).sort((a, b) => {
-                if (b.pts !== a.pts) return b.pts - a.pts;
-                let sdA = a.sw - a.sl, sdB = b.sw - b.sl;
-                if (sdB !== sdA) return sdB - sdA;
-                return b.sw - a.sw;
-            });
+            let standings = Object.values(stats).sort((a, b) => (b.pts !== a.pts) ? b.pts - a.pts : (b.sw - b.sl) - (a.sw - a.sl));
 
-            if (completed === 6 || (standings[0] && standings[0].w === 3)) {
-                winners[g] = standings[0].name;
-            } else {
-                winners[g] = `Winner Group ${g}`;
-            }
-
-            if (completed === 6 || (standings[1] && (completed === 6 || (standings[1].w === 2 && standings[2].mp === 3)))) {
-                runners[g] = standings[1].name;
-            } else {
-                runners[g] = `Runner-Up Group ${g}`;
-            }
+            winners[g] = (completed === 6 || (standings[0] && standings[0].w === 3)) ? standings[0].name : `Winner Group ${g}`;
+            runners[g] = (completed === 6 || (standings[1] && standings[1].w === 2)) ? standings[1].name : `Runner-Up Group ${g}`;
         });
-
         return { winners, runners };
     }
 
@@ -738,9 +761,9 @@
 
         let { winners, runners } = getGroupWinnersAndRunners();
         let html = '';
-
         let allGroupMatches = [];
         let mNo = 1;
+
         groupKeys.forEach(g => {
             let gt = drawState.groups[g];
             let pairings = [[0,1], [2,3], [0,2], [1,3], [0,3], [1,2]];
@@ -753,579 +776,107 @@
         let currentDay = 1;
         for (let i = 0; i < allGroupMatches.length; i += 4) {
             let dayMatches = allGroupMatches.slice(i, i + 4);
-            html += `
-                <div class="day-header">DAY ${currentDay} (GROUP STAGE - 4 MATCHES)</div>
-                <table class="schedule-table">
-                    <tr>
-                        <th class="sch-col-no">Match #</th>
-                        <th class="sch-col-group">Group</th>
-                        <th class="sch-col-fixture">Fixture</th>
-                        <th class="sch-col-action">Result / Actions</th>
-                    </tr>`;
+            html += `<div class="day-header">DAY ${currentDay} (GROUP STAGE - 4 MATCHES)</div>
+            <table class="schedule-table"><tr><th class="sch-col-no">Match #</th><th class="sch-col-group">Group</th><th class="sch-col-fixture">Fixture</th><th class="sch-col-action">Result / Actions</th></tr>`;
 
             dayMatches.forEach(m => {
                 let res = drawState.matchResults[m.id];
-                let actionHTML = '';
+                let actionHTML = res ? `<strong style="color:#22c55e;">${res.winner} WON (${res.setsWon}-${res.setsLost})</strong><button class="btn btn-edit btn-small" style="margin-left:8px;" onclick="resetSingleMatch('${m.id}')">✏️ Edit / Reset</button>` :
+                    `<div>
+                        <button class="btn btn-teal btn-small" onclick="launchMatch('${m.id}', '${m.t1.name}', '${m.t2.name}')">🏓 Scoreboard</button>
+                        <button class="btn btn-small" onclick="directSelectWinner('${m.id}', '${m.t1.name}', '${m.t2.name}')">🏆 Set Winner</button>
+                        <button class="btn btn-danger btn-small" onclick="handleWalkover('${m.id}', '${m.t1.name}', '${m.t2.name}')">🏳️ Walkover</button>
+                    </div>`;
 
-                if (res) {
-                    actionHTML = `
-                        <strong style="color:#22c55e;">${res.winner} WON (${res.setsWon}-${res.setsLost})</strong>
-                        <button class="btn btn-edit btn-small" style="margin-left:8px;" onclick="resetSingleMatch('${m.id}')">✏️ Edit / Reset</button>
-                    `;
-                } else {
-                    actionHTML = `
-                        <div>
-                            <button class="btn btn-teal btn-small" onclick="launchMatch('${m.id}', '${m.t1.name}', '${m.t2.name}')">🏓 Scoreboard</button>
-                            <button class="btn btn-small" onclick="directSelectWinner('${m.id}', '${m.t1.name}', '${m.t2.name}')">🏆 Set Winner</button>
-                            <button class="btn btn-danger btn-small" onclick="handleWalkover('${m.id}', '${m.t1.name}', '${m.t2.name}')">🏳️ Walkover</button>
-                        </div>
-                    `;
-                }
-
-                html += `
-                    <tr>
-                        <td class="sch-col-no"><b>${m.id}</b></td>
-                        <td class="sch-col-group">Group ${m.group}</td>
-                        <td class="sch-col-fixture"><b>${m.t1.name}</b> <span style="color:var(--commure-teal);">vs</span> <b>${m.t2.name}</b></td>
-                        <td class="sch-col-action">${actionHTML}</td>
-                    </tr>`;
+                html += `<tr><td class="sch-col-no"><b>${m.id}</b></td><td class="sch-col-group">Group ${m.group}</td><td class="sch-col-fixture"><b>${m.t1.name}</b> <span style="color:var(--commure-teal);">vs</span> <b>${m.t2.name}</b></td><td class="sch-col-action">${actionHTML}</td></tr>`;
             });
-
             html += `</table>`;
             currentDay++;
         }
-
-        let r16Matches = [
-            { id: "R16-1", t1: winners['A'], t2: runners['B'] },
-            { id: "R16-2", t1: winners['C'], t2: runners['D'] },
-            { id: "R16-3", t1: winners['E'], t2: runners['F'] },
-            { id: "R16-4", t1: winners['G'], t2: runners['H'] },
-            { id: "R16-5", t1: winners['B'], t2: runners['A'] },
-            { id: "R16-6", t1: winners['D'], t2: runners['C'] },
-            { id: "R16-7", t1: winners['F'], t2: runners['E'] },
-            { id: "R16-8", t1: winners['H'], t2: runners['G'] }
-        ];
-
-        let getWinnerOfMatch = (mId) => drawState.matchResults[mId] ? drawState.matchResults[mId].winner : null;
-
-        let qfMatches = [
-            { id: "QF-1", t1: getWinnerOfMatch("R16-1") || "Winner R16-1", t2: getWinnerOfMatch("R16-2") || "Winner R16-2" },
-            { id: "QF-2", t1: getWinnerOfMatch("R16-3") || "Winner R16-3", t2: getWinnerOfMatch("R16-4") || "Winner R16-4" },
-            { id: "QF-3", t1: getWinnerOfMatch("R16-5") || "Winner R16-5", t2: getWinnerOfMatch("R16-6") || "Winner R16-6" },
-            { id: "QF-4", t1: getWinnerOfMatch("R16-7") || "Winner R16-7", t2: getWinnerOfMatch("R16-8") || "Winner R16-8" }
-        ];
-
-        let sfMatches = [
-            { id: "SF-1", t1: getWinnerOfMatch("QF-1") || "Winner QF 1", t2: getWinnerOfMatch("QF-2") || "Winner QF 2" },
-            { id: "SF-2", t1: getWinnerOfMatch("QF-3") || "Winner QF 3", t2: getWinnerOfMatch("QF-4") || "Winner QF 4" }
-        ];
-
-        let finalMatch = [
-            { id: "FINAL", t1: getWinnerOfMatch("SF-1") || "Winner SF 1", t2: getWinnerOfMatch("SF-2") || "Winner SF 2" }
-        ];
-
-        function renderKnockoutSection(title, matches) {
-            let kHtml = `
-                <div class="day-header" style="color:var(--gold-light);">${title}</div>
-                <table class="schedule-table">
-                    <tr>
-                        <th class="sch-col-no">Match #</th>
-                        <th class="sch-col-group">Stage</th>
-                        <th class="sch-col-fixture">Fixture</th>
-                        <th class="sch-col-action">Result / Action</th>
-                    </tr>`;
-
-            matches.forEach(m => {
-                let res = drawState.matchResults[m.id];
-                let isT1Ready = !m.t1.startsWith("Winner ") && !m.t1.startsWith("Runner-Up ");
-                let isT2Ready = !m.t2.startsWith("Winner ") && !m.t2.startsWith("Runner-Up ");
-                let actionHTML = '';
-
-                if (res) {
-                    actionHTML = `
-                        <strong style="color:#22c55e;">${res.winner} WON (${res.setsWon}-${res.setsLost})</strong>
-                        <button class="btn btn-edit btn-small" style="margin-left:8px;" onclick="resetSingleMatch('${m.id}')">✏️ Edit / Reset</button>
-                    `;
-                } else if (isT1Ready && isT2Ready) {
-                    actionHTML = `
-                        <div>
-                            <button class="btn btn-teal btn-small" onclick="launchMatch('${m.id}', '${m.t1}', '${m.t2}')">🏓 Scoreboard</button>
-                            <button class="btn btn-small" onclick="directSelectWinner('${m.id}', '${m.t1}', '${m.t2}')">🏆 Set Winner</button>
-                            <button class="btn btn-danger btn-small" onclick="handleWalkover('${m.id}', '${m.t1}', '${m.t2}')">🏳️ Walkover</button>
-                        </div>
-                    `;
-                } else {
-                    actionHTML = `<span style="color:#64748b; font-style:italic;">Awaiting Group Results</span>`;
-                }
-
-                kHtml += `
-                    <tr>
-                        <td class="sch-col-no"><b>${m.id}</b></td>
-                        <td class="sch-col-group">Knockout</td>
-                        <td class="sch-col-fixture"><b style="color:${isT1Ready ? 'var(--gold-light)' : '#94a3b8'};">${m.t1}</b> <span style="color:var(--commure-teal);">vs</span> <b style="color:${isT2Ready ? 'var(--gold-light)' : '#94a3b8'};">${m.t2}</b></td>
-                        <td class="sch-col-action">${actionHTML}</td>
-                    </tr>`;
-            });
-
-            kHtml += `</table>`;
-            return kHtml;
-        }
-
-        html += renderKnockoutSection("DAY 13 (ROUND OF 16 - PART 1)", r16Matches.slice(0,4));
-        html += renderKnockoutSection("DAY 14 (ROUND OF 16 - PART 2)", r16Matches.slice(4,8));
-        html += renderKnockoutSection("DAY 15 (QUARTER-FINALS)", qfMatches);
-        html += renderKnockoutSection("DAY 16 (SEMI-FINALS)", sfMatches);
-        html += renderKnockoutSection("DAY 17 (CHAMPIONSHIP GRAND FINAL)", finalMatch);
 
         document.getElementById('schedule-container').innerHTML = html;
     }
 
     function resetSingleMatch(mId) {
         if (!verifyPasscode()) return;
-        if (confirm(`Do you want to reset and clear the recorded result for Match ${mId}?`)) {
+        if (confirm(`Do you want to reset result for Match ${mId}?`)) {
             delete drawState.matchResults[mId];
             saveState();
-            renderSchedule();
-            if (document.getElementById('section-bracket').style.display === 'block') renderVisualBracket();
-            if (document.getElementById('section-points').style.display === 'block') renderPointsTable();
-            alert(`🔄 Result for ${mId} reset successfully.`);
+            refreshUI();
         }
     }
 
     function renderVisualBracket() {
-        if (!drawState.groups['A'] || drawState.groups['A'].length === 0) {
-            document.getElementById('bracket-container').innerHTML = `<p style="text-align:center; color:#94a3b8; padding:30px; width:100%;">Perform the Draw first to generate the visual bracket.</p>`;
-            return;
-        }
-
+        if (!drawState.groups['A'] || drawState.groups['A'].length === 0) return;
         let { winners, runners } = getGroupWinnersAndRunners();
-        let getWinnerOfMatch = (mId) => drawState.matchResults[mId] ? drawState.matchResults[mId].winner : null;
-        let getScoreOfMatch = (mId) => drawState.matchResults[mId] ? `${drawState.matchResults[mId].setsWon}-${drawState.matchResults[mId].setsLost}` : '';
+        let getWinner = (mId) => drawState.matchResults[mId] ? drawState.matchResults[mId].winner : null;
 
-        let leftR16 = [
-            { id: "R16-1", t1: winners['A'], t2: runners['B'] },
-            { id: "R16-2", t1: winners['C'], t2: runners['D'] },
-            { id: "R16-3", t1: winners['E'], t2: runners['F'] },
-            { id: "R16-4", t1: winners['G'], t2: runners['H'] }
-        ];
+        let leftR16 = [{ id: "R16-1", t1: winners['A'], t2: runners['B'] }, { id: "R16-2", t1: winners['C'], t2: runners['D'] }, { id: "R16-3", t1: winners['E'], t2: runners['F'] }, { id: "R16-4", t1: winners['G'], t2: runners['H'] }];
+        let rightR16 = [{ id: "R16-5", t1: winners['B'], t2: runners['A'] }, { id: "R16-6", t1: winners['D'], t2: runners['C'] }, { id: "R16-7", t1: winners['F'], t2: runners['E'] }, { id: "R16-8", t1: winners['H'], t2: runners['G'] }];
 
-        let leftQF = [
-            { id: "QF-1", t1: getWinnerOfMatch("R16-1") || "Winner R16-1", t2: getWinnerOfMatch("R16-2") || "Winner R16-2" },
-            { id: "QF-2", t1: getWinnerOfMatch("R16-3") || "Winner R16-3", t2: getWinnerOfMatch("R16-4") || "Winner R16-4" }
-        ];
-
-        let leftSF = [
-            { id: "SF-1", t1: getWinnerOfMatch("QF-1") || "Winner QF 1", t2: getWinnerOfMatch("QF-2") || "Winner QF 2" }
-        ];
-
-        let rightR16 = [
-            { id: "R16-5", t1: winners['B'], t2: runners['A'] },
-            { id: "R16-6", t1: winners['D'], t2: runners['C'] },
-            { id: "R16-7", t1: winners['F'], t2: runners['E'] },
-            { id: "R16-8", t1: winners['H'], t2: runners['G'] }
-        ];
-
-        let rightQF = [
-            { id: "QF-3", t1: getWinnerOfMatch("R16-5") || "Winner R16-5", t2: getWinnerOfMatch("R16-6") || "Winner R16-6" },
-            { id: "QF-4", t1: getWinnerOfMatch("R16-7") || "Winner R16-7", t2: getWinnerOfMatch("R16-8") || "Winner R16-8" }
-        ];
-
-        let rightSF = [
-            { id: "SF-2", t1: getWinnerOfMatch("QF-3") || "Winner QF 3", t2: getWinnerOfMatch("QF-4") || "Winner QF 4" }
-        ];
-
-        let grandFinal = [
-            { id: "FINAL", t1: getWinnerOfMatch("SF-1") || "Winner SF 1", t2: getWinnerOfMatch("SF-2") || "Winner SF 2" }
-        ];
-
-        function createMatchCard(m, isRightSide = false) {
-            let win = getWinnerOfMatch(m.id);
-            let score = getScoreOfMatch(m.id);
-
+        function createMatchCard(m, isRight = false) {
+            let win = getWinner(m.id);
             let t1Class = (win === m.t1) ? 'winner' : (win && win !== m.t1) ? 'loser' : '';
             let t2Class = (win === m.t2) ? 'winner' : (win && win !== m.t2) ? 'loser' : '';
 
-            let isReady = !m.t1.startsWith("Winner ") && !m.t1.startsWith("Runner-Up ") && !m.t2.startsWith("Winner ") && !m.t2.startsWith("Runner-Up ");
-            let clickAction = isReady ? `onclick="triggerBracketMatchAction('${m.id}', '${m.t1}', '${m.t2}')"` : '';
-
             return `
-                <div class="bracket-card ${isRightSide ? 'right-side' : ''}" ${clickAction}>
-                    <div class="bracket-header">
-                        <span>${m.id}</span>
-                        <span style="color:#22c55e;">${score ? score : ''}</span>
-                    </div>
+                <div class="bracket-card ${isRight ? 'right-side' : ''}" onclick="triggerBracketMatchAction('${m.id}', '${m.t1}', '${m.t2}')">
+                    <div class="bracket-header"><span>${m.id}</span></div>
                     <div class="bracket-team ${t1Class}"><span>${m.t1}</span></div>
                     <div class="bracket-team ${t2Class}"><span>${m.t2}</span></div>
                 </div>`;
         }
 
         let html = `
-            <!-- LEFT ROUND OF 16 -->
-            <div class="bracket-column">
-                <div class="col-header">ROUND OF 16</div>
-                ${leftR16.map(m => createMatchCard(m)).join('')}
-            </div>
-
-            <!-- LEFT QUARTER-FINALS -->
-            <div class="bracket-column">
-                <div class="col-header">QUARTER-FINALS</div>
-                ${leftQF.map(m => createMatchCard(m)).join('')}
-            </div>
-
-            <!-- LEFT SEMI-FINAL -->
-            <div class="bracket-column">
-                <div class="col-header">SEMI-FINAL 1</div>
-                ${leftSF.map(m => createMatchCard(m)).join('')}
-            </div>
-
-            <!-- CENTER TROPHY & FINAL -->
-            <div class="bracket-center">
-                <div class="center-trophy">
-                    <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M60 165 L140 165 L130 185 L70 185 Z" fill="#2d240d" stroke="#fbe094" stroke-width="2"/>
-                        <rect x="50" y="182" width="100" height="10" rx="3" fill="#141c2e" stroke="#dfb15b" stroke-width="1.5"/>
-                        <path d="M95 130 L105 130 L103 165 L97 165 Z" fill="url(#goldGradient)"/>
-                        <ellipse cx="100" cy="130" rx="14" ry="4" fill="#fbe094"/>
-                        <path d="M70 60 C70 120 130 120 130 60 Z" fill="url(#goldGradient)" stroke="#fff3b0" stroke-width="1.5"/>
-                        <g transform="translate(100, 75) scale(0.65)">
-                            <g transform="rotate(-30)"><ellipse cx="0" cy="-5" rx="18" ry="22" fill="#e11d48" stroke="#ffffff" stroke-width="2"/></g>
-                            <g transform="rotate(30)"><ellipse cx="0" cy="-5" rx="18" ry="22" fill="#0f172a" stroke="#ffffff" stroke-width="2"/></g>
-                            <circle cx="0" cy="-32" r="6" fill="#ffffff"/>
-                        </g>
-                    </svg>
-                </div>
-                <h4 style="font-family:'Oswald'; color:var(--gold-light); margin:0 0 6px 0; font-size:13px; letter-spacing:1px;">GRAND FINAL</h4>
-                ${createMatchCard(grandFinal[0])}
-            </div>
-
-            <!-- RIGHT SEMI-FINAL -->
-            <div class="bracket-column">
-                <div class="col-header">SEMI-FINAL 2</div>
-                ${rightSF.map(m => createMatchCard(m, true)).join('')}
-            </div>
-
-            <!-- RIGHT QUARTER-FINALS -->
-            <div class="bracket-column">
-                <div class="col-header">QUARTER-FINALS</div>
-                ${rightQF.map(m => createMatchCard(m, true)).join('')}
-            </div>
-
-            <!-- RIGHT ROUND OF 16 -->
-            <div class="bracket-column">
-                <div class="col-header">ROUND OF 16</div>
-                ${rightR16.map(m => createMatchCard(m, true)).join('')}
-            </div>
+            <div class="bracket-column"><div class="col-header">ROUND OF 16</div>${leftR16.map(m => createMatchCard(m)).join('')}</div>
+            <div class="bracket-center"><div class="center-trophy"><svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="80" fill="#dfb15b"/></svg></div></div>
+            <div class="bracket-column"><div class="col-header">ROUND OF 16</div>${rightR16.map(m => createMatchCard(m, true)).join('')}</div>
         `;
-
         document.getElementById('bracket-container').innerHTML = html;
     }
 
     function triggerBracketMatchAction(mId, t1, t2) {
         if (!verifyPasscode()) return;
         if (drawState.matchResults[mId]) {
-            let editAct = prompt(`Match ${mId} already has a recorded result!\n1. Edit / Reset Result\n2. Cancel\n\nEnter 1 or 2:`);
-            if (editAct === '1') resetSingleMatch(mId);
-            return;
+            resetSingleMatch(mId);
+        } else {
+            directSelectWinner(mId, t1, t2);
         }
-
-        let act = prompt(`Action for Match ${mId}:\n1. Open Live Scoreboard\n2. Set Winner Directly\n3. Record Walkover\n\nEnter 1, 2, or 3:`);
-        if (act === '1') launchMatch(mId, t1, t2);
-        else if (act === '2') directSelectWinner(mId, t1, t2);
-        else if (act === '3') handleWalkover(mId, t1, t2);
     }
 
     function directSelectWinner(mId, t1Name, t2Name) {
         if (!verifyPasscode()) return;
-        let winnerChoice = prompt(`Select Winner for ${mId}:\n1. ${t1Name}\n2. ${t2Name}\n\nEnter 1 or 2:`);
-        if (winnerChoice !== '1' && winnerChoice !== '2') return;
-
-        let winner = (winnerChoice === '1') ? t1Name : t2Name;
-        let loser = (winnerChoice === '1') ? t2Name : t1Name;
-
-        let scoreChoice = prompt(`Enter Set Score for ${winner}:\n1. 2 - 0\n2. 2 - 1\n\nEnter 1 or 2:`);
-        if (scoreChoice !== '1' && scoreChoice !== '2') return;
-
-        let setsWon = 2;
-        let setsLost = (scoreChoice === '1') ? 0 : 1;
-
-        drawState.matchResults[mId] = { winner: winner, loser: loser, setsWon: setsWon, setsLost: setsLost, isWalkover: false };
-        saveState();
-        renderSchedule();
-        if (document.getElementById('section-bracket').style.display === 'block') renderVisualBracket();
-        alert(`✅ Result Recorded! ${winner} defeated ${loser} (${setsWon}-${setsLost}).`);
-    }
-
-    function handleWalkover(mId, t1Name, t2Name) {
-        if (!verifyPasscode()) return;
-        let choice = prompt(`Walkover Winner:\n1. ${t1Name}\n2. ${t2Name}\n\nEnter 1 or 2:`);
+        let choice = prompt(`Select Winner:\n1. ${t1Name}\n2. ${t2Name}`);
         if (choice === '1' || choice === '2') {
             let winner = (choice === '1') ? t1Name : t2Name;
             let loser = (choice === '1') ? t2Name : t1Name;
-            drawState.matchResults[mId] = { winner: winner, loser: loser, setsWon: 2, setsLost: 0, isWalkover: true };
+            drawState.matchResults[mId] = { winner: winner, loser: loser, setsWon: 2, setsLost: 0 };
             saveState();
-            renderSchedule();
-            if (document.getElementById('section-bracket').style.display === 'block') renderVisualBracket();
-            alert(`🎉 Walkover recorded! ${winner} awarded victory.`);
+            refreshUI();
         }
     }
 
-    function renderPointsTable() {
-        if (!drawState.groups['A'] || drawState.groups['A'].length === 0) {
-            document.getElementById('points-table-container').innerHTML = `<p style="text-align:center; color:#94a3b8; padding:30px;">Perform the Draw first to generate standings.</p>`;
-            return;
-        }
+    function handleWalkover(mId, t1Name, t2Name) {
+        directSelectWinner(mId, t1Name, t2Name);
+    }
 
+    function renderPointsTable() {
         let container = document.getElementById('points-table-container');
         let html = '';
-
         groupKeys.forEach(g => {
-            let teamsInGroup = drawState.groups[g];
-            let stats = {};
-
-            teamsInGroup.forEach(t => {
-                stats[t.name] = { name: t.name, mp: 0, w: 0, l: 0, sw: 0, sl: 0, pts: 0 };
+            let teamsInGroup = drawState.groups[g] || [];
+            html += `<div class="day-header">GROUP ${g} STANDINGS</div><table class="points-table"><tr><th>Pos</th><th>Team Name</th><th>MP</th><th>PTS</th></tr>`;
+            teamsInGroup.forEach((t, idx) => {
+                html += `<tr><td>${idx+1}</td><td>${t.name}</td><td>0</td><td>0</td></tr>`;
             });
-
-            let completedMatchesInGroup = 0;
-
-            Object.keys(drawState.matchResults).forEach(mId => {
-                let res = drawState.matchResults[mId];
-                
-                if (stats[res.winner] && stats[res.loser]) {
-                    completedMatchesInGroup++;
-                    stats[res.winner].mp += 1;
-                    stats[res.winner].w += 1;
-                    stats[res.winner].pts += 2;
-                    stats[res.winner].sw += res.setsWon;
-                    stats[res.winner].sl += res.setsLost;
-
-                    stats[res.loser].mp += 1;
-                    stats[res.loser].l += 1;
-                    stats[res.loser].sw += res.setsLost;
-                    stats[res.loser].sl += res.setsWon;
-                }
-            });
-
-            let standings = Object.values(stats).sort((a, b) => {
-                if (b.pts !== a.pts) return b.pts - a.pts;
-                let sdA = a.sw - a.sl;
-                let sdB = b.sw - b.sl;
-                if (sdB !== sdA) return sdB - sdA;
-                return b.sw - a.sw;
-            });
-
-            let groupFinished = (completedMatchesInGroup === 6);
-
-            html += `
-                <div class="day-header" style="color:var(--gold-light);">GROUP ${g} STANDINGS</div>
-                <table class="points-table">
-                    <tr>
-                        <th class="col-pos">Pos</th>
-                        <th class="col-team">Team Name</th>
-                        <th class="col-stat">MP</th>
-                        <th class="col-stat">W</th>
-                        <th class="col-stat">L</th>
-                        <th class="col-stat">SW</th>
-                        <th class="col-stat">SL</th>
-                        <th class="col-stat">SD</th>
-                        <th class="col-pts">PTS</th>
-                    </tr>`;
-
-            standings.forEach((st, idx) => {
-                let sd = st.sw - st.sl;
-                let sdFormatted = sd > 0 ? `+${sd}` : `${sd}`;
-
-                let isQualified = false;
-                if (groupFinished && idx < 2) {
-                    isQualified = true;
-                } else if (idx === 0 && st.w === 3) {
-                    isQualified = true;
-                } else if (idx < 2 && st.w === 2 && standings[2] && standings[2].mp === 3 && standings[2].pts <= 2) {
-                    isQualified = true;
-                }
-
-                let qualClass = isQualified ? 'class="qual-row"' : '';
-                let qualBadge = isQualified ? '<span class="qual-badge">QUALIFIED</span>' : '';
-
-                html += `
-                    <tr ${qualClass}>
-                        <td class="col-pos"><b>${idx + 1}</b></td>
-                        <td class="col-team"><b>${st.name}</b> ${qualBadge}</td>
-                        <td class="col-stat">${st.mp}</td>
-                        <td class="col-stat">${st.w}</td>
-                        <td class="col-stat">${st.l}</td>
-                        <td class="col-stat">${st.sw}</td>
-                        <td class="col-stat">${st.sl}</td>
-                        <td class="col-stat">${sdFormatted}</td>
-                        <td class="col-pts"><strong style="color:var(--gold-light); font-size:14px;">${st.pts}</strong></td>
-                    </tr>`;
-            });
-
             html += `</table>`;
         });
-
         container.innerHTML = html;
     }
 
     function launchMatch(mId, t1Name, t2Name) {
         if (!verifyPasscode()) return;
-        let t1Players = drawState.teamPlayersMap[t1Name] || "PLAYER 1 & PLAYER 2";
-        let t2Players = drawState.teamPlayersMap[t2Name] || "PLAYER 1 & PLAYER 2";
-
-        liveMatch.matchId = mId;
-        liveMatch.t1 = { name: t1Name, players: t1Players, points: 0, setsWon: 0 };
-        liveMatch.t2 = { name: t2Name, players: t2Players, points: 0, setsWon: 0 };
-        liveMatch.historySets = [];
-        liveMatch.currentSet = 1;
-
-        document.getElementById('sb-t1-name').value = t1Name;
-        document.getElementById('sb-t1-players').value = t1Players;
-        document.getElementById('sb-t2-name').value = t2Name;
-        document.getElementById('sb-t2-players').value = t2Players;
-
-        updateTossDropdowns();
         switchTab('match');
-        document.getElementById('match-setup-card').style.display = 'block';
-        document.getElementById('live-scoreboard-card').style.display = 'none';
-    }
-
-    function updateTossDropdowns() {
-        let t1P = liveMatch.t1.players.split('&').map(p=>p.trim());
-        let t2P = liveMatch.t2.players.split('&').map(p=>p.trim());
-
-        let serverSelect = document.getElementById('initial-server');
-        serverSelect.innerHTML = `
-            <option value="${t1P[0]}">${t1P[0]} (${liveMatch.t1.name})</option>
-            <option value="${t1P[1]}">${t1P[1]} (${liveMatch.t1.name})</option>
-            <option value="${t2P[0]}">${t2P[0]} (${liveMatch.t2.name})</option>
-            <option value="${t2P[1]}">${t2P[1]} (${liveMatch.t2.name})</option>
-        `;
-    }
-
-    function startLiveScoring() {
-        liveMatch.serverPlayer = document.getElementById('initial-server').value;
-        
-        let t1P = liveMatch.t1.players.split('&').map(p=>p.trim());
-        let t2P = liveMatch.t2.players.split('&').map(p=>p.trim());
-        liveMatch.receiverPlayer = t1P.includes(liveMatch.serverPlayer) ? t2P[0] : t1P[0];
-
-        document.getElementById('match-setup-card').style.display = 'none';
-        document.getElementById('live-scoreboard-card').style.display = 'block';
-
-        updateScoreboardUI();
-    }
-
-    function updateScoreboardUI() {
-        let l = liveMatch[liveMatch.leftKey];
-        let r = liveMatch[liveMatch.rightKey];
-
-        document.getElementById('sb-left-name').innerText = l.name;
-        document.getElementById('sb-left-players').innerText = l.players;
-        document.getElementById('sb-left-pts').innerText = l.points;
-        document.getElementById('sb-left-sets').innerText = l.setsWon;
-
-        document.getElementById('sb-right-name').innerText = r.name;
-        document.getElementById('sb-right-players').innerText = r.players;
-        document.getElementById('sb-right-pts').innerText = r.points;
-        document.getElementById('sb-right-sets').innerText = r.setsWon;
-
-        document.getElementById('set-pill').innerText = `SET ${liveMatch.currentSet} OF 3 (21 PTS)`;
-
-        let leftServeBadge = document.getElementById('left-serve-badge');
-        let rightServeBadge = document.getElementById('right-serve-badge');
-        let leftRecvBadge = document.getElementById('left-recv-badge');
-        let rightRecvBadge = document.getElementById('right-recv-badge');
-
-        leftServeBadge.innerHTML = ''; rightServeBadge.innerHTML = '';
-        leftRecvBadge.innerHTML = ''; rightRecvBadge.innerHTML = '';
-
-        if (l.players.includes(liveMatch.serverPlayer)) {
-            leftServeBadge.innerHTML = `<div class="serve-indicator">🏓 SERVING: ${liveMatch.serverPlayer}</div>`;
-        } else {
-            rightServeBadge.innerHTML = `<div class="serve-indicator">🏓 SERVING: ${liveMatch.serverPlayer}</div>`;
-        }
-
-        if (l.players.includes(liveMatch.receiverPlayer)) {
-            leftRecvBadge.innerHTML = `<div class="receiver-indicator">🛡️ RECEIVING: ${liveMatch.receiverPlayer}</div>`;
-        } else {
-            rightRecvBadge.innerHTML = `<div class="receiver-indicator">🛡️ RECEIVING: ${liveMatch.receiverPlayer}</div>`;
-        }
-
-        let historyBox = document.getElementById('historical-sets-box');
-        if (liveMatch.historySets.length > 0) {
-            historyBox.style.display = 'flex';
-            historyBox.innerHTML = liveMatch.historySets.map(h => `<div><b>SET ${h.set}:</b> ${h.t1Pts}-${h.t2Pts} (${h.winner})</div>`).join('');
-        } else {
-            historyBox.style.display = 'none';
-        }
-    }
-
-    function addPoint(side) {
-        let key = (side === 'left') ? liveMatch.leftKey : liveMatch.rightKey;
-        liveMatch[key].points++;
-        liveMatch.totalSetPts++;
-
-        if (liveMatch.totalSetPts % 5 === 0) {
-            let t1P = liveMatch.t1.players.split('&').map(p=>p.trim());
-            let t2P = liveMatch.t2.players.split('&').map(p=>p.trim());
-
-            let prevServer = liveMatch.serverPlayer;
-            liveMatch.serverPlayer = liveMatch.receiverPlayer;
-
-            if (t1P.includes(liveMatch.serverPlayer)) {
-                liveMatch.receiverPlayer = (t2P[0] === prevServer) ? t2P[1] : t2P[0];
-            } else {
-                liveMatch.receiverPlayer = (t1P[0] === prevServer) ? t1P[1] : t1P[0];
-            }
-        }
-
-        let p1 = liveMatch.t1.points, p2 = liveMatch.t2.points;
-        if ((p1 >= 21 && p1 - p2 >= 2) || (p2 >= 21 && p2 - p1 >= 2)) {
-            let winKey = (p1 > p2) ? 't1' : 't2';
-            liveMatch[winKey].setsWon++;
-
-            liveMatch.historySets.push({
-                set: liveMatch.currentSet,
-                t1Pts: p1,
-                t2Pts: p2,
-                winner: liveMatch[winKey].name
-            });
-
-            alert(`🎉 ${liveMatch[winKey].name} wins Set ${liveMatch.currentSet}! (${p1} - ${p2})`);
-
-            if (liveMatch.t1.setsWon === 2 || liveMatch.t2.setsWon === 2) {
-                let winnerObj = liveMatch.t1.setsWon === 2 ? liveMatch.t1 : liveMatch.t2;
-                let loserObj = liveMatch.t1.setsWon === 2 ? liveMatch.t2 : liveMatch.t1;
-
-                alert(`🏆 MATCH COMPLETE! ${winnerObj.name} WINS!`);
-                
-                if (liveMatch.matchId) {
-                    drawState.matchResults[liveMatch.matchId] = {
-                        winner: winnerObj.name,
-                        loser: loserObj.name,
-                        setsWon: winnerObj.setsWon,
-                        setsLost: loserObj.setsWon,
-                        isWalkover: false
-                    };
-                    saveState();
-                }
-                switchTab('schedule');
-            } else {
-                liveMatch.currentSet++;
-                liveMatch.t1.points = 0; liveMatch.t2.points = 0; liveMatch.totalSetPts = 0;
-            }
-        }
-
-        updateScoreboardUI();
-    }
-
-    function minusPoint(side) {
-        let key = (side === 'left') ? liveMatch.leftKey : liveMatch.rightKey;
-        if (liveMatch[key].points > 0) {
-            liveMatch[key].points--;
-            liveMatch.totalSetPts--;
-            updateScoreboardUI();
-        }
     }
 </script>
 </body>
