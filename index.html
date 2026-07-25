@@ -73,6 +73,17 @@
             border-radius: 12px;
         }
 
+        .admin-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--gold);
+            color: var(--gold-light);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
         .venue-badge {
             display: inline-block; background: rgba(0, 210, 255, 0.1);
             border: 1px solid var(--commure-teal); color: #ffffff;
@@ -109,6 +120,11 @@
             font-weight: 700; padding: 14px 28px; border-radius: 30px; width: 85%;
             margin: 10px auto; display: block; box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
         }
+
+        /* ADMIN ONLY VISIBILITY CONTROL */
+        .admin-only { display: none !important; }
+        body.is-admin .admin-only { display: inline-block !important; }
+        body.is-admin div.admin-only { display: block !important; }
 
         .tab-bar { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
 
@@ -234,107 +250,57 @@
         }
 
         .bracket-column {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-around;
-            height: 500px;
-            position: relative;
+            display: flex; flex-direction: column; justify-content: space-around;
+            height: 500px; position: relative;
         }
 
         .col-header {
-            font-family: 'Oswald', sans-serif;
-            font-size: 10px;
-            color: var(--commure-teal);
-            letter-spacing: 1px;
-            text-align: center;
-            text-transform: uppercase;
-            font-weight: 700;
-            position: absolute;
-            top: -20px;
-            width: 100%;
+            font-family: 'Oswald', sans-serif; font-size: 10px; color: var(--commure-teal);
+            letter-spacing: 1px; text-align: center; text-transform: uppercase; font-weight: 700;
+            position: absolute; top: -20px; width: 100%;
         }
 
         .bracket-card {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(0, 210, 255, 0.5);
-            border-radius: 5px;
-            padding: 4px;
-            font-size: 9px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-            width: 100%;
+            background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(0, 210, 255, 0.5);
+            border-radius: 5px; padding: 4px; font-size: 9px; cursor: pointer; transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); width: 100%;
         }
 
-        .bracket-card:hover {
-            transform: scale(1.02);
-            border-color: var(--gold-light);
-            box-shadow: 0 0 12px rgba(223, 177, 91, 0.5);
-        }
-
+        .bracket-card:hover { transform: scale(1.02); border-color: var(--gold-light); box-shadow: 0 0 12px rgba(223, 177, 91, 0.5); }
         .bracket-card.right-side { border-color: rgba(223, 177, 91, 0.5); }
-
-        .bracket-header {
-            display: flex;
-            justify-content: space-between;
-            font-size: 8.5px;
-            font-weight: 800;
-            color: var(--commure-teal);
-            margin-bottom: 2px;
-        }
+        .bracket-header { display: flex; justify-content: space-between; font-size: 8.5px; font-weight: 800; color: var(--commure-teal); margin-bottom: 2px; }
 
         .bracket-team {
-            background: rgba(10, 16, 30, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 3px 5px;
-            border-radius: 4px;
-            margin: 2px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: 600;
-            color: #ffffff;
-            font-size: 9px;
+            background: rgba(10, 16, 30, 0.95); border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 3px 5px; border-radius: 4px; margin: 2px 0; display: flex;
+            justify-content: space-between; align-items: center; font-weight: 600; color: #ffffff; font-size: 9px;
         }
 
-        .bracket-team span {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            width: 100%;
-        }
-
-        .bracket-team.winner {
-            background: linear-gradient(90deg, rgba(34, 197, 94, 0.45), rgba(34, 197, 94, 0.2));
-            color: #ffffff;
-            border-left: 2px solid #22c55e;
-            font-weight: 700;
-        }
-
-        .bracket-team.winner::after {
-            content: '✓';
-            color: #22c55e;
-            font-weight: bold;
-            font-size: 9px;
-            margin-left: 2px;
-        }
-
+        .bracket-team span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+        .bracket-team.winner { background: linear-gradient(90deg, rgba(34, 197, 94, 0.45), rgba(34, 197, 94, 0.2)); color: #ffffff; border-left: 2px solid #22c55e; font-weight: 700; }
+        .bracket-team.winner::after { content: '✓'; color: #22c55e; font-weight: bold; font-size: 9px; margin-left: 2px; }
         .bracket-team.loser { opacity: 0.3; }
 
-        .bracket-center {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 500px;
-            z-index: 2;
+        .bracket-center { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 500px; z-index: 2; }
+        .center-trophy { width: 75px; height: 75px; filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8)); animation: orbPulse 2.5s infinite ease-in-out; margin-bottom: 6px; }
+
+        /* MODAL STYLING FOR MASKED PASSWORDS */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); z-index: 999; display: none;
+            align-items: center; justify-content: center; backdrop-filter: blur(5px);
         }
 
-        .center-trophy {
-            width: 75px; height: 75px;
-            filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8));
-            animation: orbPulse 2.5s infinite ease-in-out;
-            margin-bottom: 6px;
+        .modal-box {
+            background: var(--navy-card); border: 1px solid var(--gold);
+            border-radius: 12px; padding: 22px; width: 360px; text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+
+        .modal-box h3 { margin-top: 0; color: var(--gold-light); font-family: 'Oswald'; letter-spacing: 1px; }
+        .modal-box input[type="password"] {
+            width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--gold);
+            background: #0f172a; color: #fff; text-align: center; font-size: 16px; margin: 15px 0; outline: none;
         }
 
         select, input[type="text"] {
@@ -345,17 +311,47 @@
 </head>
 <body>
 
+<!-- MASKED ADMIN LOGIN MODAL -->
+<div class="modal-overlay" id="passModal">
+    <div class="modal-box">
+        <h3>🔒 ADMIN AUTHENTICATION</h3>
+        <p style="font-size: 12px; color: #cbd5e1;">Enter password to unlock tournament edit controls:</p>
+        <input type="password" id="adminPassInput" placeholder="••••••••" onkeyup="checkEnterKey(event, 'admin')">
+        <div>
+            <button class="btn btn-teal" onclick="submitPasscode()">Login Admin</button>
+            <button class="btn btn-danger" onclick="closePassModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- MASKED FULL DATA RESET SECURITY MODAL -->
+<div class="modal-overlay" id="resetSecurityModal">
+    <div class="modal-box" style="border-color: #e11d48;">
+        <h3 style="color: #fda4af;">⚠️ FULL DATA RESET SECURITY</h3>
+        <p style="font-size: 13px; color: var(--gold-light); font-weight: 600; margin-bottom: 5px;">Security Question:</p>
+        <p style="font-size: 12px; color: #ffffff; background: #0f172a; padding: 8px; border-radius: 6px; border: 1px solid rgba(225,29,72,0.4);">
+            Do you know what’s the Laptop Password of Masud? If yes, input it.
+        </p>
+        <input type="password" id="resetAnswerInput" placeholder="••••••••" onkeyup="checkEnterKey(event, 'reset')">
+        <div>
+            <button class="btn btn-danger" onclick="verifyAndResetData()">Wipe & Reset Data</button>
+            <button class="btn btn-teal" onclick="closeResetModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
 <div class="container">
     <div class="header">
         <div class="admin-controls-top">
             <span class="sync-badge" id="sync-status">☁️ Connecting...</span>
+            <button class="admin-btn" id="admin-login-btn" onclick="openPassModal()">🔒 Admin Login</button>
         </div>
         <h1>🏓 BD RCM Table Tennis Tournament 2026</h1>
         <h2>Master Tournament & Live Scoreboard Hub</h2>
         <div class="venue-badge">📍 Venue: 8th Floor, Cafeteria Premises, Spectra</div>
     </div>
 
-    <!-- MAIN TAB NAVIGATION -->
+    <!-- MAIN TAB NAVIGATION (FULL VIEW FOR EVERYONE) -->
     <div class="tab-bar">
         <button class="tab-btn active" id="tab-draw-btn" onclick="switchTab('draw')">🏆 Draw & Groups</button>
         <button class="tab-btn" id="tab-schedule-btn" onclick="switchTab('schedule')">📅 Schedule & Fixtures</button>
@@ -378,7 +374,8 @@
             </div>
 
             <p style="font-size:15px;">Selected Teams: <span id="selected-count" style="color:var(--gold-light); font-weight:bold;">0</span> / 32</p>
-            <button class="btn btn-danger" onclick="startOfficialDraw()">🏓 Perform 32-Team Draw</button>
+            <button class="btn btn-danger admin-only" onclick="startOfficialDraw()">🏓 Perform 32-Team Draw</button>
+            <div class="spectator-msg" style="color:#64748b; font-size:12px; font-style:italic;">Admin Login required to execute Official Draw</div>
         </div>
 
         <div id="draw-display-card" class="card" style="display:none; text-align:center;">
@@ -403,8 +400,8 @@
             </div>
 
             <div id="drawn-announcement" style="font-size:18px; font-weight:bold; color:var(--gold-light); margin:10px 0;">🔒 GROUPS & DRAW LOCKED</div>
-            <button id="draw-next-btn" class="btn" style="display:none;" onclick="drawNextBall()">🎲 DRAW NEXT TEAM</button>
-            <button class="btn btn-danger btn-small" onclick="unlockAdminReset()">🔒 Reset & Re-Draw</button>
+            <button id="draw-next-btn" class="btn admin-only" style="display:none;" onclick="drawNextBall()">🎲 DRAW NEXT TEAM</button>
+            <button class="btn btn-danger btn-small admin-only" onclick="unlockAdminReset()">🔒 Reset & Re-Draw Data</button>
 
             <div class="groups-grid" id="groups-container"></div>
         </div>
@@ -471,7 +468,8 @@
                 </div>
             </div>
 
-            <button class="btn btn-teal" style="width:100%; margin-top:15px;" onclick="startLiveScoring()">🚀 Start Match Scoring</button>
+            <button class="btn btn-teal admin-only" style="width:100%; margin-top:15px;" onclick="startLiveScoring()">🚀 Start Match Scoring</button>
+            <div class="spectator-msg" style="color:#64748b; font-size:12px; font-style:italic; margin-top:10px; text-align:center;">Admin Login required to start scoring controls</div>
         </div>
 
         <div id="live-scoreboard-card" class="card" style="display:none;">
@@ -488,8 +486,8 @@
                     <div id="sb-left-players" style="font-size:11px; color:#cbd5e1; margin-bottom:10px;"></div>
                     <div class="point-display" id="sb-left-pts">0</div>
                     
-                    <button class="btn-point-large" onclick="addPoint('left')">+1 POINT</button>
-                    <button class="btn btn-danger btn-small" style="margin-top:5px;" onclick="minusPoint('left')">-1 Point</button>
+                    <button class="btn-point-large admin-only" onclick="addPoint('left')">+1 POINT</button>
+                    <button class="btn btn-danger btn-small admin-only" style="margin-top:5px;" onclick="minusPoint('left')">-1 Point</button>
                     
                     <div id="left-serve-badge"></div>
                     <div id="left-recv-badge"></div>
@@ -506,8 +504,8 @@
                     <div id="sb-right-players" style="font-size:11px; color:#cbd5e1; margin-bottom:10px;"></div>
                     <div class="point-display" id="sb-right-pts">0</div>
                     
-                    <button class="btn-point-large" onclick="addPoint('right')">+1 POINT</button>
-                    <button class="btn btn-danger btn-small" style="margin-top:5px;" onclick="minusPoint('right')">-1 Point</button>
+                    <button class="btn-point-large admin-only" onclick="addPoint('right')">+1 POINT</button>
+                    <button class="btn btn-danger btn-small admin-only" style="margin-top:5px;" onclick="minusPoint('right')">-1 Point</button>
                     
                     <div id="right-serve-badge"></div>
                     <div id="right-recv-badge"></div>
@@ -520,11 +518,11 @@
 
 <script>
     const PASSCODE = "2441139";
-    
-    // YOUR FIREBASE REALTIME DATABASE URL DIRECTLY INTEGRATED HERE:
+    const RESET_ANSWER = "Mp@2441139";
     const FIREBASE_DB_URL = "https://bd-rcm-tt-2026-default-rtdb.firebaseio.com/";
 
     let db = null;
+    let isAdmin = false;
     let activeTeams = [];
     let drawState = {
         isComplete: false,
@@ -548,44 +546,111 @@
     const groupKeys = ['A','B','C','D','E','F','G','H'];
 
     window.onload = function() {
-        // First load from local browser cache for instant rendering
         let saved = localStorage.getItem('bd_rcm_tt_2026');
         if (saved) {
             drawState = JSON.parse(saved);
             refreshUI();
         }
 
-        // Initialize Firebase Realtime Database
         if (FIREBASE_DB_URL) {
             try {
                 firebase.initializeApp({ databaseURL: FIREBASE_DB_URL });
                 db = firebase.database().ref("tournament_state");
 
-                // Listen for live updates from Firebase Cloud
                 db.on('value', (snapshot) => {
                     const data = snapshot.val();
                     if (data) {
                         drawState = data;
                         localStorage.setItem('bd_rcm_tt_2026', JSON.stringify(drawState));
                         refreshUI();
-                        document.getElementById('sync-status').innerText = '☁️ Realtime Cloud Synced';
+                        document.getElementById('sync-status').innerText = '☁️ Live Cloud Synced';
                     }
                 });
             } catch(e) {
-                console.error("Firebase Connection Error:", e);
-                document.getElementById('sync-status').innerText = '⚠️ Local Mode';
+                console.error(e);
             }
         }
     };
+
+    /* MASKED PASSCODE MODAL CONTROLS */
+    function openPassModal() {
+        if (isAdmin) {
+            isAdmin = false;
+            document.body.classList.remove('is-admin');
+            document.getElementById('admin-login-btn').innerText = '🔒 Admin Login';
+            alert('Logged out of Admin Mode.');
+            refreshUI();
+        } else {
+            document.getElementById('passModal').style.display = 'flex';
+            document.getElementById('adminPassInput').value = '';
+            document.getElementById('adminPassInput').focus();
+        }
+    }
+
+    function closePassModal() {
+        document.getElementById('passModal').style.display = 'none';
+    }
+
+    function checkEnterKey(e, mode) {
+        if (e.key === 'Enter') {
+            if (mode === 'admin') submitPasscode();
+            if (mode === 'reset') verifyAndResetData();
+        }
+    }
+
+    function submitPasscode() {
+        let val = document.getElementById('adminPassInput').value;
+        if (val === PASSCODE) {
+            isAdmin = true;
+            document.body.classList.add('is-admin');
+            document.getElementById('admin-login-btn').innerText = '🔓 Admin Active';
+            closePassModal();
+            refreshUI();
+            alert('Unlocked Admin Mode!');
+        } else {
+            alert('❌ Incorrect Password!');
+            document.getElementById('adminPassInput').value = '';
+        }
+    }
+
+    /* FULL DATA RESET SECURITY MODAL CONTROLS */
+    function unlockAdminReset() {
+        if (!isAdmin) return alert('Admin login required!');
+        document.getElementById('resetSecurityModal').style.display = 'flex';
+        document.getElementById('resetAnswerInput').value = '';
+        document.getElementById('resetAnswerInput').focus();
+    }
+
+    function closeResetModal() {
+        document.getElementById('resetSecurityModal').style.display = 'none';
+    }
+
+    function verifyAndResetData() {
+        let inputAns = document.getElementById('resetAnswerInput').value;
+        if (inputAns === RESET_ANSWER) {
+            drawState = {
+                isComplete: false,
+                groups: { 'A': [], 'B': [], 'C': [], 'D': [], 'E': [], 'F': [], 'G': [], 'H': [] },
+                remainingPool: [],
+                drawPointer: 0,
+                matchResults: {},
+                teamPlayersMap: {}
+            };
+            saveState();
+            closeResetModal();
+            alert("✅ FULL TOURNAMENT DATA WIPED & RESET SUCCESSFULLY!");
+            location.reload();
+        } else {
+            alert("❌ Incorrect Security Password! Full Data Reset Aborted.");
+            document.getElementById('resetAnswerInput').value = '';
+        }
+    }
 
     function saveState() {
         localStorage.setItem('bd_rcm_tt_2026', JSON.stringify(drawState));
         if (db) {
             db.set(drawState).then(() => {
-                document.getElementById('sync-status').innerText = '☁️ Realtime Cloud Synced';
-            }).catch((err) => {
-                console.error("Database Save Error:", err);
-                document.getElementById('sync-status').innerText = '⚠️ Sync Error';
+                document.getElementById('sync-status').innerText = '☁️ Live Cloud Synced';
             });
         }
     }
@@ -595,13 +660,10 @@
         renderSchedule();
         if (document.getElementById('section-bracket').style.display === 'block') renderVisualBracket();
         if (document.getElementById('section-points').style.display === 'block') renderPointsTable();
-    }
 
-    function verifyPasscode() {
-        let pass = prompt("Enter Password (2441139):");
-        if (pass === PASSCODE) return true;
-        if (pass !== null) alert("❌ Incorrect Password!");
-        return false;
+        document.querySelectorAll('.spectator-msg').forEach(el => {
+            el.style.display = isAdmin ? 'none' : 'block';
+        });
     }
 
     function switchTab(tab) {
@@ -619,8 +681,8 @@
         if (tab === 'points') renderPointsTable();
     }
 
+    /* PASTE DATA DOES NOT REQUIRE PASSWORD */
     function parsePastedData() {
-        if (!verifyPasscode()) return;
         let text = document.getElementById('paste-box').value.trim();
         if (!text) return alert("Please paste data first!");
 
@@ -657,7 +719,7 @@
     }
 
     function startOfficialDraw() {
-        if (!verifyPasscode()) return;
+        if (!isAdmin) return alert('Admin mode required!');
         if (activeTeams.length === 0) return alert("Please load teams first!");
 
         let target = 32, dIdx = 1;
@@ -695,6 +757,7 @@
     }
 
     function drawNextBall() {
+        if (!isAdmin) return;
         if (drawState.remainingPool.length === 0) {
             drawState.isComplete = true;
             saveState();
@@ -709,15 +772,6 @@
         drawState.drawPointer++;
         saveState();
         showDrawLockedView();
-    }
-
-    function unlockAdminReset() {
-        if (!verifyPasscode()) return;
-        if (confirm("Do you want to reset the current draw?")) {
-            drawState = { isComplete: false, groups: { 'A': [], 'B': [], 'C': [], 'D': [], 'E': [], 'F': [], 'G': [], 'H': [] }, remainingPool: [], drawPointer: 0, matchResults: {}, teamPlayersMap: {} };
-            saveState();
-            location.reload();
-        }
     }
 
     function getGroupWinnersAndRunners() {
@@ -781,12 +835,20 @@
 
             dayMatches.forEach(m => {
                 let res = drawState.matchResults[m.id];
-                let actionHTML = res ? `<strong style="color:#22c55e;">${res.winner} WON (${res.setsWon}-${res.setsLost})</strong><button class="btn btn-edit btn-small" style="margin-left:8px;" onclick="resetSingleMatch('${m.id}')">✏️ Edit / Reset</button>` :
-                    `<div>
-                        <button class="btn btn-teal btn-small" onclick="launchMatch('${m.id}', '${m.t1.name}', '${m.t2.name}')">🏓 Scoreboard</button>
-                        <button class="btn btn-small" onclick="directSelectWinner('${m.id}', '${m.t1.name}', '${m.t2.name}')">🏆 Set Winner</button>
-                        <button class="btn btn-danger btn-small" onclick="handleWalkover('${m.id}', '${m.t1.name}', '${m.t2.name}')">🏳️ Walkover</button>
-                    </div>`;
+                let actionHTML = '';
+
+                if (res) {
+                    actionHTML = `<strong style="color:#22c55e;">${res.winner} WON (${res.setsWon}-${res.setsLost})</strong>
+                        <button class="btn btn-edit btn-small admin-only" style="margin-left:8px;" onclick="resetSingleMatch('${m.id}')">✏️ Edit / Reset</button>`;
+                } else {
+                    actionHTML = `
+                        <div class="admin-only">
+                            <button class="btn btn-teal btn-small" onclick="launchMatch('${m.id}', '${m.t1.name}', '${m.t2.name}')">🏓 Scoreboard</button>
+                            <button class="btn btn-small" onclick="directSelectWinner('${m.id}', '${m.t1.name}', '${m.t2.name}')">🏆 Set Winner</button>
+                            <button class="btn btn-danger btn-small" onclick="handleWalkover('${m.id}', '${m.t1.name}', '${m.t2.name}')">🏳️ Walkover</button>
+                        </div>
+                        <span class="spectator-msg" style="color:#64748b; font-style:italic;">Upcoming Match</span>`;
+                }
 
                 html += `<tr><td class="sch-col-no"><b>${m.id}</b></td><td class="sch-col-group">Group ${m.group}</td><td class="sch-col-fixture"><b>${m.t1.name}</b> <span style="color:var(--commure-teal);">vs</span> <b>${m.t2.name}</b></td><td class="sch-col-action">${actionHTML}</td></tr>`;
             });
@@ -795,10 +857,11 @@
         }
 
         document.getElementById('schedule-container').innerHTML = html;
+        refreshUI();
     }
 
     function resetSingleMatch(mId) {
-        if (!verifyPasscode()) return;
+        if (!isAdmin) return alert('Admin mode required!');
         if (confirm(`Do you want to reset result for Match ${mId}?`)) {
             delete drawState.matchResults[mId];
             saveState();
@@ -819,8 +882,10 @@
             let t1Class = (win === m.t1) ? 'winner' : (win && win !== m.t1) ? 'loser' : '';
             let t2Class = (win === m.t2) ? 'winner' : (win && win !== m.t2) ? 'loser' : '';
 
+            let clickAttr = isAdmin ? `onclick="triggerBracketMatchAction('${m.id}', '${m.t1}', '${m.t2}')"` : '';
+
             return `
-                <div class="bracket-card ${isRight ? 'right-side' : ''}" onclick="triggerBracketMatchAction('${m.id}', '${m.t1}', '${m.t2}')">
+                <div class="bracket-card ${isRight ? 'right-side' : ''}" ${clickAttr}>
                     <div class="bracket-header"><span>${m.id}</span></div>
                     <div class="bracket-team ${t1Class}"><span>${m.t1}</span></div>
                     <div class="bracket-team ${t2Class}"><span>${m.t2}</span></div>
@@ -836,7 +901,7 @@
     }
 
     function triggerBracketMatchAction(mId, t1, t2) {
-        if (!verifyPasscode()) return;
+        if (!isAdmin) return;
         if (drawState.matchResults[mId]) {
             resetSingleMatch(mId);
         } else {
@@ -845,7 +910,7 @@
     }
 
     function directSelectWinner(mId, t1Name, t2Name) {
-        if (!verifyPasscode()) return;
+        if (!isAdmin) return alert('Admin mode required!');
         let choice = prompt(`Select Winner:\n1. ${t1Name}\n2. ${t2Name}`);
         if (choice === '1' || choice === '2') {
             let winner = (choice === '1') ? t1Name : t2Name;
@@ -875,7 +940,7 @@
     }
 
     function launchMatch(mId, t1Name, t2Name) {
-        if (!verifyPasscode()) return;
+        if (!isAdmin) return alert('Admin mode required!');
         switchTab('match');
     }
 </script>
