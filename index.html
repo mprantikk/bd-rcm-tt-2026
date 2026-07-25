@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BD RCM Table Tennis 2026 - Master Tournament Hub</title>
+    
+    <!-- Firebase App & Realtime Database SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Oswald:wght@600;700&display=swap');
 
@@ -226,7 +231,7 @@
         }
 
         /* ------------------------------------------------------------------ */
-        /* LIGHTWEIGHT, HIGH-CONTRAST 100% SCREEN FIT BRACKET LAYOUT          */
+        /* BRACKET LAYOUT                                                     */
         /* ------------------------------------------------------------------ */
         .bracket-wrapper {
             display: grid;
@@ -357,7 +362,7 @@
 <div class="container">
     <div class="header">
         <div class="admin-controls-top">
-            <span class="sync-badge" id="sync-status">☁️ Cloud Synced</span>
+            <span class="sync-badge" id="sync-status">☁️ Connecting...</span>
             <button class="admin-toggle-btn" id="admin-toggle-btn" onclick="toggleAdminMode()">🔒 Admin Login</button>
         </div>
         <h1>🏓 BD RCM Table Tennis Tournament 2026</h1>
@@ -530,8 +535,14 @@
 
 <script>
     const PASSCODE = "2441139";
-    const CLOUD_BIN_ID = "66fa87dce41b4d34e45ab021"; // Free Cloud Store ID
-    const CLOUD_URL = `https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}`;
+    
+    // FIREBASE CLOUD CONFIGURATION
+    const firebaseConfig = {
+        databaseURL: "https://bd-rcm-tt-2026-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database().ref("tournament_state");
 
     let isAdmin = false;
     let activeTeams = [];
@@ -557,20 +568,11 @@
     const groupKeys = ['A','B','C','D','E','F','G','H'];
 
     window.onload = function() {
-        fetchCloudData();
-        // Auto-refresh spectator view every 10 seconds for live data sync
-        setInterval(fetchCloudData, 10000);
-    };
-
-    /* FETCH REALTIME DATA FROM CLOUD DATABASE */
-    function fetchCloudData() {
-        fetch(`${CLOUD_URL}/latest`, {
-            headers: { 'X-Master-Key': '$2a$10$89.J2S0U4Jk5g2lQ9s/3O.P1R64L6W0X1T5O5Z2M6b4U8K9N0S1Z6' }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data && data.record) {
-                drawState = data.record;
+        // REALTIME CLOUD LISTENER (SYNC INSTANTLY ACROSS INCOGNITO & ALL DEVICES)
+        db.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                drawState = data;
                 localStorage.setItem('bd_rcm_tt_2026', JSON.stringify(drawState));
                 if (drawState.isComplete || drawState.drawPointer > 0) {
                     showDrawLockedView();
@@ -578,37 +580,22 @@
                 renderSchedule();
                 if (document.getElementById('section-bracket').style.display === 'block') renderVisualBracket();
                 if (document.getElementById('section-points').style.display === 'block') renderPointsTable();
-                document.getElementById('sync-status').innerText = '☁️ Cloud Synced';
-            }
-        })
-        .catch(err => {
-            // Fallback to local browser cache if offline
-            let saved = localStorage.getItem('bd_rcm_tt_2026');
-            if (saved) {
-                drawState = JSON.parse(saved);
-                if (drawState.isComplete || drawState.drawPointer > 0) showDrawLockedView();
+                document.getElementById('sync-status').innerText = '☁️ Live Cloud Synced';
+            } else {
+                document.getElementById('sync-status').innerText = '☁️ Cloud Ready';
             }
         });
-    }
+    };
 
-    /* SAVE DATA TO CLOUD AND LOCAL STORAGE */
+    /* SAVE DATA DIRECTLY TO CLOUD */
     function saveState() {
         localStorage.setItem('bd_rcm_tt_2026', JSON.stringify(drawState));
         document.getElementById('sync-status').innerText = '🔄 Syncing...';
 
-        fetch(CLOUD_URL, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Master-Key': '$2a$10$89.J2S0U4Jk5g2lQ9s/3O.P1R64L6W0X1T5O5Z2M6b4U8K9N0S1Z6'
-            },
-            body: JSON.stringify(drawState)
-        })
-        .then(() => {
-            document.getElementById('sync-status').innerText = '☁️ Cloud Synced';
-        })
-        .catch(() => {
-            document.getElementById('sync-status').innerText = '⚠️ Local Only';
+        db.set(drawState).then(() => {
+            document.getElementById('sync-status').innerText = '☁️ Live Cloud Synced';
+        }).catch(() => {
+            document.getElementById('sync-status').innerText = '⚠️ Cloud Sync Error';
         });
     }
 
@@ -984,7 +971,6 @@
         }
     }
 
-    /* 100% NO-SCROLL SCREEN-FIT VISUAL BRACKET */
     function renderVisualBracket() {
         if (!drawState.groups['A'] || drawState.groups['A'].length === 0) {
             document.getElementById('bracket-container').innerHTML = `<p style="text-align:center; color:#94a3b8; padding:30px; width:100%;">Perform the Draw first to generate the visual bracket.</p>`;
