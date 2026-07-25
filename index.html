@@ -351,7 +351,7 @@
         <div class="venue-badge">📍 Venue: 8th Floor, Cafeteria Premises, Spectra</div>
     </div>
 
-    <!-- MAIN TAB NAVIGATION (FULL VIEW FOR EVERYONE) -->
+    <!-- MAIN TAB NAVIGATION -->
     <div class="tab-bar">
         <button class="tab-btn active" id="tab-draw-btn" onclick="switchTab('draw')">🏆 Draw & Groups</button>
         <button class="tab-btn" id="tab-schedule-btn" onclick="switchTab('schedule')">📅 Schedule & Fixtures</button>
@@ -681,23 +681,64 @@
         if (tab === 'points') renderPointsTable();
     }
 
-    /* PASTE DATA DOES NOT REQUIRE PASSWORD */
-    function parsePastedData() {
-        let text = document.getElementById('paste-box').value.trim();
-        if (!text) return alert("Please paste data first!");
+    /* DIRECT CLIPBOARD API PARSER (NO PASSWORD REQUIRED TO PASTE) */
+    async function parsePastedData() {
+        let textarea = document.getElementById('paste-box');
+        let text = textarea.value.trim();
+
+        // 1. If textarea is empty, attempt to read directly from System Clipboard
+        if (!text && navigator.clipboard && navigator.clipboard.readText) {
+            try {
+                text = await navigator.clipboard.readText();
+                if (text) {
+                    textarea.value = text;
+                }
+            } catch (err) {
+                console.warn("Clipboard permission required or unavailable:", err);
+            }
+        }
+
+        text = textarea.value.trim();
+        if (!text) {
+            return alert("⚠️ No data found! Please copy team rows from Google Sheets first, or paste directly into the box.");
+        }
 
         let lines = text.split('\n');
         let parsed = [];
 
-        lines.forEach(line => {
-            let cols = line.split('\t').length > 1 ? line.split('\t') : line.split(',');
-            let tName = cols[2] ? cols[2].trim() : cols[0].trim();
-            let p1 = cols[3] ? cols[3].trim() : "";
-            let p2 = cols[6] ? cols[6].trim() : "";
+        lines.forEach((line) => {
+            let cleanLine = line.trim();
+            if (!cleanLine) return;
 
-            if (tName && !tName.toLowerCase().includes("team name") && !tName.toLowerCase().includes("timestamp")) {
+            let cols = cleanLine.includes('\t') ? cleanLine.split('\t') : cleanLine.split(',');
+            cols = cols.map(c => c.trim()).filter(c => c !== "");
+
+            if (cols.length === 0) return;
+
+            let lowerFirst = cols[0].toLowerCase();
+            if (lowerFirst.includes("timestamp") || lowerFirst.includes("team name") || lowerFirst.includes("sl")) {
+                return;
+            }
+
+            let tName = "";
+            let p1 = "";
+            let p2 = "";
+
+            if (cols.length === 1) {
+                tName = cols[0];
+            } else if (cols.length === 2) {
+                tName = cols[0];
+                p1 = cols[1];
+            } else if (cols.length >= 3) {
+                tName = cols[2] ? cols[2] : cols[0];
+                p1 = cols[3] ? cols[3] : "";
+                p2 = cols[6] ? cols[6] : (cols[4] ? cols[4] : "");
+            }
+
+            if (tName) {
                 let nameUpper = tName.toUpperCase();
-                let playersUpper = (p1 && p2) ? `${p1} & ${p2}`.toUpperCase() : "PLAYER 1 & PLAYER 2";
+                let playersUpper = (p1 && p2) ? `${p1} & ${p2}`.toUpperCase() : (p1 ? p1.toUpperCase() : "PLAYER 1 & PLAYER 2");
+                
                 parsed.push({ name: nameUpper, players: playersUpper });
                 drawState.teamPlayersMap[nameUpper] = playersUpper;
             }
@@ -706,6 +747,9 @@
         if (parsed.length > 0) {
             activeTeams = parsed;
             renderChecklist();
+            alert(`✅ Successfully loaded ${parsed.length} teams!`);
+        } else {
+            alert("❌ Could not parse team data. Please check your copied Google Sheets rows.");
         }
     }
 
