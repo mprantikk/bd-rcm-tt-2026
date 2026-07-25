@@ -113,14 +113,7 @@
         .btn-purple { background: linear-gradient(135deg, #8b5cf6, #c084fc); color: #fff; }
         .btn-danger { background: linear-gradient(135deg, #e11d48, #fda4af); color: #fff; }
         .btn-edit { background: linear-gradient(135deg, #d97706, #fbbf24); color: #000; }
-        .btn-small { padding: 5px 8px; font-size: 10px; border-radius: 12px; }
-
-        .btn-point-large {
-            background: linear-gradient(135deg, #22c55e, #4ade80);
-            color: #000; font-family: 'Oswald', sans-serif; font-size: 18px;
-            font-weight: 700; padding: 14px 28px; border-radius: 30px; width: 85%;
-            margin: 10px auto; display: block; box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
-        }
+        .btn-small { padding: 6px 12px; font-size: 11px; border-radius: 12px; }
 
         .admin-only { display: none !important; }
         body.is-admin .admin-only { display: inline-block !important; }
@@ -137,14 +130,14 @@
         .tab-btn.active { background: var(--gold); color: #000; font-weight: bold; box-shadow: 0 0 15px rgba(223, 177, 91, 0.5); }
 
         .paste-area {
-            width: 100%; height: 90px; padding: 10px; border-radius: 8px;
+            width: 100%; height: 110px; padding: 10px; border-radius: 8px;
             border: 1px dashed var(--gold); background: #0f172a; color: #fff;
-            font-family: inherit; font-size: 12px; outline: none; resize: vertical; margin-bottom: 10px;
+            font-family: inherit; font-size: 11px; outline: none; resize: vertical; margin-bottom: 10px;
         }
 
         .checklist-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px;
-            margin: 12px 0; text-align: left; max-height: 240px; overflow-y: auto; padding: 10px;
+            margin: 12px 0; text-align: left; max-height: 260px; overflow-y: auto; padding: 10px;
             background: #0f172a; border-radius: 8px; border: 1px solid rgba(223, 177, 91, 0.2);
         }
 
@@ -161,10 +154,6 @@
         .team-badge { background: var(--navy-card); border-left: 3px solid var(--commure-teal); padding: 6px 8px; margin-bottom: 5px; border-radius: 0 5px 5px 0; text-align: left; }
         .team-title { font-family: 'Oswald', sans-serif; font-size: 13px; color: var(--gold-light); }
         .player-names { font-size: 9px; color: #cbd5e1; }
-
-        .scoreboard-grid { display: grid; grid-template-columns: 1fr 100px 1fr; gap: 12px; align-items: center; text-align: center; }
-        .team-box { background: #0f172a; border: 2px solid var(--gold); border-radius: 12px; padding: 15px; position: relative; }
-        .point-display { font-family: 'Oswald', sans-serif; font-size: 70px; color: #ffffff; line-height: 1; margin: 8px 0; }
 
         .schedule-table, .points-table { 
             width: 100%; border-collapse: collapse; margin-top: 5px; margin-bottom: 15px; 
@@ -208,7 +197,7 @@
 
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.88); z-index: 999; display: flex;
+            background: rgba(0, 0, 0, 0.88); z-index: 999; display: none;
             align-items: center; justify-content: center; backdrop-filter: blur(8px);
         }
 
@@ -231,34 +220,21 @@
 </head>
 <body>
 
-<!-- INITIAL ENTRY GATEWAY MODAL -->
-<div class="modal-overlay" id="gatewayModal">
-    <div class="modal-box">
-        <h2 style="margin-top: 0; color: var(--gold-light); font-family: 'Oswald'; font-size: 20px;">🏓 WELCOME TO TT HUB</h2>
-        <p style="font-size: 14px; color: #ffffff; font-weight: 600; margin: 15px 0 20px 0;">Are you an Admin?</p>
-        
-        <div style="display: flex; gap: 15px; justify-content: center;">
-            <button class="btn btn-teal" style="min-width: 100px; font-size: 15px;" onclick="handleGatewayChoice('YES')">YES</button>
-            <button class="btn btn-danger" style="min-width: 100px; font-size: 15px;" onclick="handleGatewayChoice('NO')">NO</button>
-        </div>
-    </div>
-</div>
-
 <!-- MASKED ADMIN LOGIN MODAL -->
-<div class="modal-overlay" id="passModal" style="display: none;">
+<div class="modal-overlay" id="passModal">
     <div class="modal-box">
         <h3 style="margin-top: 0; color: var(--gold-light); font-family: 'Oswald';">🔒 ADMIN AUTHENTICATION</h3>
         <p style="font-size: 12px; color: #cbd5e1;">Enter password to unlock tournament edit controls:</p>
         <input type="password" id="adminPassInput" placeholder="••••••••" onkeyup="checkEnterKey(event, 'admin')">
         <div>
             <button class="btn btn-teal" onclick="submitPasscode()">Login Admin</button>
-            <button class="btn btn-danger" onclick="cancelAdminLogin()">Cancel / View Only</button>
+            <button class="btn btn-danger" onclick="closePassModal()">Cancel</button>
         </div>
     </div>
 </div>
 
 <!-- MASKED FULL DATA RESET SECURITY MODAL -->
-<div class="modal-overlay" id="resetSecurityModal" style="display: none;">
+<div class="modal-overlay" id="resetSecurityModal">
     <div class="modal-box" style="border-color: #e11d48;">
         <h3 style="color: #fda4af; margin-top: 0; font-family: 'Oswald';">⚠️ FULL DATA RESET SECURITY</h3>
         <p style="font-size: 13px; color: var(--gold-light); font-weight: 600; margin-bottom: 5px;">Security Question:</p>
@@ -276,8 +252,8 @@
 <div class="container">
     <div class="header">
         <div class="admin-controls-top">
-            <span class="sync-badge" id="sync-status">🟢 Live Cloud Synced</span>
-            <button class="admin-btn" id="admin-login-btn" onclick="openRoleSwitch()">⚙️ Switch Mode</button>
+            <span class="sync-badge" id="sync-status">🟢 System Ready</span>
+            <button class="admin-btn" id="admin-login-btn" onclick="openPassModal()">🔒 Admin Login</button>
         </div>
         <h1>🏓 BD RCM Table Tennis Tournament 2026</h1>
         <h2>Master Tournament & Live Scoreboard Hub</h2>
@@ -296,18 +272,20 @@
     <!-- TAB 1: DRAW & SETUP -->
     <div id="section-draw">
         <div id="setup-card" class="card" style="text-align:center;">
-            <h3>Step 1: Load 32 Teams & Start Draw</h3>
+            <h3>Step 1: Load Teams & Start Draw</h3>
             
-            <div style="max-width:600px; margin:0 auto;">
-                <textarea id="paste-box" class="paste-area" placeholder="Paste 32 team rows from Google Sheets, Excel, or CSV..."></textarea>
+            <div style="max-width:650px; margin:0 auto;">
+                <textarea id="paste-box" class="paste-area" placeholder="Paste your raw Google Forms responses or standard text rows here..."></textarea>
                 
                 <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 10px; flex-wrap: wrap;">
-                    <button class="btn btn-teal btn-small" onclick="parsePastedData()">📋 Load From Textbox</button>
+                    <button class="btn btn-teal btn-small" onclick="processPastedText()">📋 Parse & Load Textbox Data</button>
                     
-                    <label class="btn btn-purple btn-small" style="cursor: pointer; display: inline-block; margin: 2px;">
+                    <label class="btn btn-purple btn-small" style="cursor: pointer; display: inline-block;">
                         📁 Upload CSV / TSV File
                         <input type="file" id="fileUploader" accept=".csv, .tsv, .txt" style="display: none;" onchange="handleFileUpload(event)">
                     </label>
+
+                    <button class="btn btn-edit btn-small" onclick="loadSampleData()">⚡ Load Sample Data</button>
                 </div>
             </div>
 
@@ -400,8 +378,6 @@
             try { drawState = JSON.parse(saved); refreshUI(); } catch(e) {}
         }
 
-        document.getElementById('sync-status').innerText = '🟢 Live Cloud Synced';
-
         if (FIREBASE_DB_URL) {
             try {
                 firebase.initializeApp({ databaseURL: FIREBASE_DB_URL });
@@ -414,81 +390,89 @@
                         localStorage.setItem('bd_rcm_tt_2026', JSON.stringify(drawState));
                         refreshUI();
                     }
+                    document.getElementById('sync-status').innerText = '🟢 Live Cloud Synced';
                 });
-            } catch(e) { console.warn(e); }
+            } catch(e) {
+                console.warn(e);
+            }
         }
     };
 
-    /* 🚪 GATEWAY & POP-UP CONTROLS */
-    function handleGatewayChoice(choice) {
-        document.getElementById('gatewayModal').style.display = 'none';
-        if (choice === 'YES') {
-            document.getElementById('passModal').style.display = 'flex';
-            document.getElementById('adminPassInput').value = '';
-            document.getElementById('adminPassInput').focus();
-        } else {
-            isAdmin = false;
-            document.body.classList.remove('is-admin');
-            document.getElementById('admin-login-btn').innerText = '👁️ Visitor View';
-            refreshUI();
+    /* 🎯 FAILPROOF PARSER FOR GOOGLE FORMS DATA */
+    function parseGoogleFormData(rawText) {
+        if (!rawText || !rawText.trim()) {
+            alert("⚠️ Please paste data into the text box first!");
+            return;
         }
-    }
 
-    function cancelAdminLogin() {
-        document.getElementById('passModal').style.display = 'none';
-        isAdmin = false;
-        document.body.classList.remove('is-admin');
-        document.getElementById('admin-login-btn').innerText = '👁️ Visitor View';
-        refreshUI();
-    }
-
-    function openRoleSwitch() {
-        document.getElementById('gatewayModal').style.display = 'flex';
-    }
-
-    /* 🟢 UNIVERSAL PARSER FOR TEXT, TSV, AND CSV DATA */
-    function processRawTextData(text) {
-        if (!text || !text.trim()) return alert("⚠️ No text found to parse!");
-
-        let timestampRegex = /(?=\d{1,2}\/\d{1,2}\/\d{4})/g;
-        let rows = text.split(timestampRegex);
         let parsed = [];
+        
+        // 1. Try splitting by Timestamp occurrences (MM/DD/YYYY or M/D/YYYY)
+        let timestampRegex = /(?=\d{1,2}\/\d{1,2}\/\d{4})/g;
+        let entries = rawText.split(timestampRegex);
 
-        rows.forEach(rowStr => {
-            let cleanRow = rowStr.trim();
-            if (!cleanRow || cleanRow.toLowerCase().includes("timestamp") || cleanRow.toLowerCase().includes("agreement")) return;
+        entries.forEach(entry => {
+            let str = entry.trim();
+            if (!str || str.toLowerCase().includes("timestamp") || str.toLowerCase().includes("agreement to rules")) return;
 
-            let emails = cleanRow.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
             let tName = "", p1 = "", p2 = "";
 
-            if (emails.length >= 2) {
-                let e1 = emails[0];
-                let afterE1 = cleanRow.substring(cleanRow.indexOf(e1) + e1.length).trim();
+            // Strategy 1: Look for @commure.com or @ emails as anchors
+            let emailMatches = str.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
+
+            if (emailMatches.length >= 2) {
+                // Email 1 is Submitter, Email 2 is Player 1 Email, Email 3 is Player 2 Email
+                let firstEmail = emailMatches[0];
+                let secondEmail = emailMatches[1];
+
+                // Text between Email 1 and Email 2 contains: [Team Name] [Player 1 Name]
+                let e1Idx = str.indexOf(firstEmail) + firstEmail.length;
+                let e2Idx = str.indexOf(secondEmail);
                 
-                let segments = afterE1.split(/\t|\n|\s{2,}|,/);
-                segments = segments.map(s => s.replace(/^"|"$/g, '').trim()).filter(s => 
-                    s !== "" && 
+                if (e1Idx < e2Idx) {
+                    let teamAndP1 = str.substring(e1Idx, e2Idx).trim();
+                    
+                    // Split teamAndP1 by tabs or multiple spaces
+                    let parts = teamAndP1.split(/\t|\n|\s{2,}/).map(s => s.trim()).filter(s => s.length > 0);
+                    if (parts.length >= 2) {
+                        tName = parts[0];
+                        p1 = parts.slice(1).join(" ");
+                    } else if (parts.length === 1) {
+                        tName = parts[0];
+                    }
+                }
+
+                // Text after Email 2 contains: [Player 1 Phone] [Player 2 Name] [Player 2 Email]...
+                let afterE2 = str.substring(e2Idx + secondEmail.length).trim();
+                let afterE2Parts = afterE2.split(/\t|\n|\s{2,}/).map(s => s.trim()).filter(s => 
+                    s.length > 0 && 
                     !/^\+?\d{8,15}$/.test(s) && 
-                    !s.includes('@') && 
+                    !s.includes('@') &&
                     !s.toLowerCase().includes("rulebook") &&
                     !s.toLowerCase().includes("professional bat") &&
-                    !s.toLowerCase().includes("acknowledge") &&
                     !s.toLowerCase().includes("facility team")
                 );
 
-                if (segments.length >= 1) tName = segments[0];
-                if (segments.length >= 2) p1 = segments[1];
-                if (segments.length >= 3) p2 = segments[2];
-            } else {
-                let cols = cleanRow.split(/\t|,/).map(c => c.replace(/^"|"$/g, '').trim()).filter(c => c !== "");
+                if (afterE2Parts.length >= 1) {
+                    p2 = afterE2Parts[0];
+                }
+            } 
+            
+            // Strategy 2: Fallback delimiter split (Tabs, Commas, Pipelines)
+            if (!tName) {
+                let cols = str.split(/\t|,|\|/).map(c => c.trim()).filter(c => c !== "");
                 if (cols.length >= 4) {
-                    tName = cols[3] || cols[2] || cols[0];
-                    p1 = cols[4] || cols[3] || cols[1];
-                    p2 = cols[7] || cols[6] || cols[2];
+                    tName = cols[2] || cols[0];
+                    p1 = cols[3] || cols[1];
+                    p2 = cols[6] || cols[2];
+                } else if (cols.length >= 1) {
+                    tName = cols[0];
+                    p1 = cols[1] || "";
+                    p2 = cols[2] || "";
                 }
             }
 
-            if (tName && !tName.includes('@')) {
+            if (tName && !tName.toLowerCase().includes("timestamp")) {
                 let nameUpper = tName.toUpperCase();
                 let playersUpper = (p1 && p2) ? `${p1} & ${p2}`.toUpperCase() : (p1 ? p1.toUpperCase() : "PLAYER 1 & PLAYER 2");
 
@@ -500,25 +484,15 @@
         if (parsed.length > 0) {
             activeTeams = parsed;
             renderChecklist();
-            alert(`✅ Successfully loaded ${parsed.length} teams!`);
+            alert(`🎉 Success! Loaded ${parsed.length} teams.`);
         } else {
-            alert("❌ Could not parse team data. Please check your text/file content.");
+            alert("❌ Could not parse team names. Click 'Load Sample Data' to test!");
         }
     }
 
-    async function parsePastedData() {
+    function processPastedText() {
         let textarea = document.getElementById('paste-box');
-        let text = textarea.value.trim();
-
-        if (!text && navigator.clipboard && navigator.clipboard.readText) {
-            try {
-                text = await navigator.clipboard.readText();
-                if (text) textarea.value = text;
-            } catch(e) {}
-        }
-
-        text = textarea.value.trim();
-        processRawTextData(text);
+        parseGoogleFormData(textarea.value);
     }
 
     function handleFileUpload(event) {
@@ -527,12 +501,21 @@
 
         let reader = new FileReader();
         reader.onload = function(e) {
-            let fileContent = e.target.result;
-            document.getElementById('paste-box').value = fileContent;
-            processRawTextData(fileContent);
+            let content = e.target.result;
+            document.getElementById('paste-box').value = content;
+            parseGoogleFormData(content);
         };
         reader.readAsText(file);
         event.target.value = '';
+    }
+
+    function loadSampleData() {
+        let sample = `7/22/2026 18:27:52\tsekander.shaan@commure.com\tDo Not Recon\tSekander MD Tajwar Shaan\tsekander.shaan@commure.com\t01886796966\tMd Muhaiminur Rahman\tmdmuhaiminur.rahman@commure.com\n` +
+        `7/22/2026 18:42:35\tsadman.karim@commure.com\tMavericks\tSadman Sami Karim\tsadman.karim@commure.com\t01861504510\tNiloy Sarker Pranto\tniloysarker.pranto@commure.com\n` +
+        `7/22/2026 19:37:18\tsakib.ahmed@commure.com\tJohn Cena\tSakib Ahmed\tsakib.ahmed@commure.com\t01331223787\tMohammad Rafa Imtiaz\trafa.imtiaz@commure.com`;
+        
+        document.getElementById('paste-box').value = sample;
+        parseGoogleFormData(sample);
     }
 
     function renderChecklist() {
@@ -543,6 +526,23 @@
         });
         document.getElementById('selected-count').innerText = activeTeams.length;
     }
+
+    /* AUTHENTICATION MODALS */
+    function openPassModal() {
+        if (isAdmin) {
+            isAdmin = false;
+            document.body.classList.remove('is-admin');
+            document.getElementById('admin-login-btn').innerText = '🔒 Admin Login';
+            alert('Logged out of Admin Mode.');
+            refreshUI();
+        } else {
+            document.getElementById('passModal').style.display = 'flex';
+            document.getElementById('adminPassInput').value = '';
+            document.getElementById('adminPassInput').focus();
+        }
+    }
+
+    function closePassModal() { document.getElementById('passModal').style.display = 'none'; }
 
     function checkEnterKey(e, mode) {
         if (e.key === 'Enter') {
@@ -557,7 +557,7 @@
             isAdmin = true;
             document.body.classList.add('is-admin');
             document.getElementById('admin-login-btn').innerText = '🔓 Admin Active';
-            document.getElementById('passModal').style.display = 'none';
+            closePassModal();
             refreshUI();
             alert('Unlocked Admin Mode!');
         } else {
@@ -599,7 +599,6 @@
     function saveState() {
         localStorage.setItem('bd_rcm_tt_2026', JSON.stringify(drawState));
         if (db) { try { db.set(drawState); } catch(e) {} }
-        document.getElementById('sync-status').innerText = '🟢 Live Cloud Synced';
     }
 
     function refreshUI() {
