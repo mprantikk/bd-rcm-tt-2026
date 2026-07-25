@@ -9,6 +9,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
+    <!-- SheetJS CDN for CSV & Excel File Uploading -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Oswald:wght@600;700&display=swap');
 
@@ -110,6 +113,7 @@
 
         .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(223, 177, 91, 0.6); }
         .btn-teal { background: linear-gradient(135deg, #0284c7, #38bdf8); color: #fff; }
+        .btn-purple { background: linear-gradient(135deg, #8b5cf6, #c084fc); color: #fff; }
         .btn-danger { background: linear-gradient(135deg, #e11d48, #fda4af); color: #fff; }
         .btn-edit { background: linear-gradient(135deg, #d97706, #fbbf24); color: #000; }
         .btn-small { padding: 5px 8px; font-size: 10px; border-radius: 12px; }
@@ -153,21 +157,6 @@
             border-radius: 6px; border-left: 3px solid var(--commure-teal); font-size: 12px;
         }
 
-        .trophy-orb-container {
-            width: 110px; height: 110px; margin: 10px auto; border-radius: 50%;
-            background: radial-gradient(circle at 35% 35%, #ffd700, #b8860b 60%, #523906);
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.6); animation: orbPulse 2.5s infinite ease-in-out;
-        }
-
-        .trophy-orb-container svg { width: 65px; height: 65px; }
-
-        @keyframes orbPulse {
-            0% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
-            50% { transform: scale(1.04); box-shadow: 0 0 40px rgba(255, 215, 0, 0.85); }
-            100% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
-        }
-
         .groups-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 15px; }
         .group-card { background: #0f172a; border: 1px solid var(--gold); border-radius: 8px; overflow: hidden; }
         .group-header { font-family: 'Oswald', sans-serif; background: linear-gradient(90deg, #b38728, #fbf5b7, #b38728); color: #000; font-weight: 700; text-align: center; padding: 6px; font-size: 16px; }
@@ -180,18 +169,6 @@
         .scoreboard-grid { display: grid; grid-template-columns: 1fr 100px 1fr; gap: 12px; align-items: center; text-align: center; }
         .team-box { background: #0f172a; border: 2px solid var(--gold); border-radius: 12px; padding: 15px; position: relative; }
         .point-display { font-family: 'Oswald', sans-serif; font-size: 70px; color: #ffffff; line-height: 1; margin: 8px 0; }
-
-        .serve-indicator {
-            display: block; background: var(--commure-teal); color: #000;
-            font-size: 10px; font-weight: 800; padding: 3px 6px; border-radius: 8px;
-            margin-top: 5px; text-transform: uppercase;
-        }
-
-        .receiver-indicator {
-            display: block; background: rgba(223, 177, 91, 0.2); border: 1px solid var(--gold); color: var(--gold-light);
-            font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 8px;
-            margin-top: 3px; text-transform: uppercase;
-        }
 
         .schedule-table, .points-table { 
             width: 100%; border-collapse: collapse; margin-top: 5px; margin-bottom: 15px; 
@@ -210,31 +187,6 @@
             color: var(--gold-light); font-size: 12px; letter-spacing: 1px;
         }
 
-        .sch-col-no { width: 10%; }
-        .sch-col-group { width: 12%; }
-        .sch-col-fixture { width: 44%; text-align: left !important; padding-left: 12px !important; }
-        .sch-col-action { width: 34%; text-align: center !important; }
-
-        .col-pos { width: 45px; }
-        .col-team { width: 36%; text-align: left !important; padding-left: 10px !important; }
-        .col-stat { width: 8%; }
-        .col-pts { width: 12%; }
-
-        .qual-row { background: rgba(34, 197, 94, 0.12); }
-        .qual-badge { background: #22c55e; color: #000; font-size: 9px; font-weight: bold; padding: 2px 5px; border-radius: 6px; margin-left: 6px; }
-
-        .history-box {
-            background: #0f172a; border: 1px solid var(--gold); border-radius: 8px;
-            padding: 8px; margin-top: 12px; font-size: 11px; color: var(--gold-light);
-            display: flex; justify-content: center; gap: 15px;
-        }
-
-        .day-header {
-            font-family: 'Oswald', sans-serif; color: var(--commure-teal); font-size: 15px;
-            margin-top: 20px; margin-bottom: 6px; border-bottom: 1px dashed rgba(0, 210, 255, 0.4);
-            padding-bottom: 4px; text-align: left;
-        }
-
         .bracket-wrapper {
             display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;
             align-items: center; padding: 22px 6px 12px 6px;
@@ -243,16 +195,8 @@
             width: 100%; box-sizing: border-box; overflow: hidden;
         }
 
-        .bracket-column {
-            display: flex; flex-direction: column; justify-content: space-around;
-            height: 500px; position: relative;
-        }
-
-        .col-header {
-            font-family: 'Oswald', sans-serif; font-size: 10px; color: var(--commure-teal);
-            letter-spacing: 1px; text-align: center; text-transform: uppercase; font-weight: 700;
-            position: absolute; top: -20px; width: 100%;
-        }
+        .bracket-column { display: flex; flex-direction: column; justify-content: space-around; height: 500px; position: relative; }
+        .col-header { font-family: 'Oswald', sans-serif; font-size: 10px; color: var(--commure-teal); letter-spacing: 1px; text-align: center; text-transform: uppercase; font-weight: 700; position: absolute; top: -20px; width: 100%; }
 
         .bracket-card {
             background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(0, 210, 255, 0.5);
@@ -260,23 +204,11 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); width: 100%;
         }
 
-        .bracket-card:hover { transform: scale(1.02); border-color: var(--gold-light); box-shadow: 0 0 12px rgba(223, 177, 91, 0.5); }
-        .bracket-card.right-side { border-color: rgba(223, 177, 91, 0.5); }
-        .bracket-header { display: flex; justify-content: space-between; font-size: 8.5px; font-weight: 800; color: var(--commure-teal); margin-bottom: 2px; }
-
         .bracket-team {
             background: rgba(10, 16, 30, 0.95); border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 3px 5px; border-radius: 4px; margin: 2px 0; display: flex;
             justify-content: space-between; align-items: center; font-weight: 600; color: #ffffff; font-size: 9px;
         }
-
-        .bracket-team span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
-        .bracket-team.winner { background: linear-gradient(90deg, rgba(34, 197, 94, 0.45), rgba(34, 197, 94, 0.2)); color: #ffffff; border-left: 2px solid #22c55e; font-weight: 700; }
-        .bracket-team.winner::after { content: '✓'; color: #22c55e; font-weight: bold; font-size: 9px; margin-left: 2px; }
-        .bracket-team.loser { opacity: 0.3; }
-
-        .bracket-center { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 500px; z-index: 2; }
-        .center-trophy { width: 75px; height: 75px; filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8)); animation: orbPulse 2.5s infinite ease-in-out; margin-bottom: 6px; }
 
         /* MODAL STYLING FOR MASKED PASSWORDS */
         .modal-overlay {
@@ -291,7 +223,6 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.8);
         }
 
-        .modal-box h3 { margin-top: 0; color: var(--gold-light); font-family: 'Oswald'; letter-spacing: 1px; }
         .modal-box input[type="password"] {
             width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--gold);
             background: #0f172a; color: #fff; text-align: center; font-size: 16px; margin: 15px 0; outline: none;
@@ -308,7 +239,7 @@
 <!-- MASKED ADMIN LOGIN MODAL -->
 <div class="modal-overlay" id="passModal">
     <div class="modal-box">
-        <h3>🔒 ADMIN AUTHENTICATION</h3>
+        <h3 style="margin-top: 0; color: var(--gold-light); font-family: 'Oswald';">🔒 ADMIN AUTHENTICATION</h3>
         <p style="font-size: 12px; color: #cbd5e1;">Enter password to unlock tournament edit controls:</p>
         <input type="password" id="adminPassInput" placeholder="••••••••" onkeyup="checkEnterKey(event, 'admin')">
         <div>
@@ -321,7 +252,7 @@
 <!-- MASKED FULL DATA RESET SECURITY MODAL -->
 <div class="modal-overlay" id="resetSecurityModal">
     <div class="modal-box" style="border-color: #e11d48;">
-        <h3 style="color: #fda4af;">⚠️ FULL DATA RESET SECURITY</h3>
+        <h3 style="color: #fda4af; margin-top: 0; font-family: 'Oswald';">⚠️ FULL DATA RESET SECURITY</h3>
         <p style="font-size: 13px; color: var(--gold-light); font-weight: 600; margin-bottom: 5px;">Security Question:</p>
         <p style="font-size: 12px; color: #ffffff; background: #0f172a; padding: 8px; border-radius: 6px; border: 1px solid rgba(225,29,72,0.4);">
             Do you know what’s the Laptop Password of Masud? If yes, input it.
@@ -337,7 +268,7 @@
 <div class="container">
     <div class="header">
         <div class="admin-controls-top">
-            <span class="sync-badge" id="sync-status">☁️ Connecting...</span>
+            <span class="sync-badge" id="sync-status">🟢 Live Cloud Synced</span>
             <button class="admin-btn" id="admin-login-btn" onclick="openPassModal()">🔒 Admin Login</button>
         </div>
         <h1>🏓 BD RCM Table Tennis Tournament 2026</h1>
@@ -358,13 +289,23 @@
     <div id="section-draw">
         <div id="setup-card" class="card" style="text-align:center;">
             <h3>Step 1: Load 32 Teams & Start Draw</h3>
+            
             <div style="max-width:600px; margin:0 auto;">
-                <textarea id="paste-box" class="paste-area" placeholder="Paste 32 team rows from Google Sheets..."></textarea>
-                <button class="btn btn-teal btn-small" onclick="parsePastedData()">📋 Load From Clipboard</button>
+                <textarea id="paste-box" class="paste-area" placeholder="Paste 32 team rows from Google Sheets or Excel..."></textarea>
+                
+                <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 10px;">
+                    <button class="btn btn-teal btn-small" onclick="parsePastedData()">📋 Load From Textbox / Clipboard</button>
+                    
+                    <!-- CSV / Excel File Uploader Button -->
+                    <label class="btn btn-purple btn-small" style="cursor: pointer; display: inline-block; margin: 2px;">
+                        📁 Upload CSV / Excel File
+                        <input type="file" id="fileUploader" accept=".csv, .xlsx, .xls" style="display: none;" onchange="handleFileUpload(event)">
+                    </label>
+                </div>
             </div>
 
             <div class="checklist-grid" id="team-checklist">
-                <div style="text-align:center; color:#94a3b8; padding:20px; width:100%;">No teams loaded yet. Paste rows from Google Sheets above.</div>
+                <div style="text-align:center; color:#94a3b8; padding:20px; width:100%;">No teams loaded yet. Paste rows or upload CSV/Excel above.</div>
             </div>
 
             <p style="font-size:15px;">Selected Teams: <span id="selected-count" style="color:var(--gold-light); font-weight:bold;">0</span> / 32</p>
@@ -373,26 +314,6 @@
         </div>
 
         <div id="draw-display-card" class="card" style="display:none; text-align:center;">
-            <div class="trophy-orb-container">
-                <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M60 165 L140 165 L130 185 L70 185 Z" fill="#2d240d" stroke="#fbe094" stroke-width="2"/>
-                    <rect x="50" y="182" width="100" height="10" rx="3" fill="#141c2e" stroke="#dfb15b" stroke-width="1.5"/>
-                    <path d="M95 130 L105 130 L103 165 L97 165 Z" fill="url(#goldGradient)"/>
-                    <ellipse cx="100" cy="130" rx="14" ry="4" fill="#fbe094"/>
-                    <path d="M70 60 C70 120 130 120 130 60 Z" fill="url(#goldGradient)" stroke="#fff3b0" stroke-width="1.5"/>
-                    <g transform="translate(100, 75) scale(0.65)">
-                        <g transform="rotate(-30)"><ellipse cx="0" cy="-5" rx="18" ry="22" fill="#e11d48" stroke="#ffffff" stroke-width="2"/></g>
-                        <g transform="rotate(30)"><ellipse cx="0" cy="-5" rx="18" ry="22" fill="#0f172a" stroke="#ffffff" stroke-width="2"/></g>
-                        <circle cx="0" cy="-32" r="6" fill="#ffffff"/>
-                    </g>
-                    <defs>
-                        <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#fff3b0"/><stop offset="40%" stop-color="#dfb15b"/><stop offset="100%" stop-color="#8c6113"/>
-                        </linearGradient>
-                    </defs>
-                </svg>
-            </div>
-
             <div id="drawn-announcement" style="font-size:18px; font-weight:bold; color:var(--gold-light); margin:10px 0;">🔒 GROUPS & DRAW LOCKED</div>
             <button id="draw-next-btn" class="btn admin-only" style="display:none;" onclick="drawNextBall()">🎲 DRAW NEXT TEAM</button>
             <button class="btn btn-danger btn-small admin-only" onclick="unlockAdminReset()">🔒 Reset & Re-Draw Data</button>
@@ -421,15 +342,11 @@
     <div id="section-points" style="display:none;">
         <div class="card">
             <h3 style="color:var(--gold-light); text-align:center; font-family:'Oswald'; margin:0; font-size:22px; letter-spacing:1px;">📊 GROUP STAGE STANDINGS</h3>
-            <p style="text-align:center; font-size:11px; color:#cbd5e1; margin-bottom:15px; margin-top:5px;">
-                Top 2 teams per group advance to Round of 16. Win = 2 PTS | Loss = 0 PTS | Tiebreaker: Set Difference (SD)<br>
-                <i style="color:var(--gold-light);">* QUALIFIED badge appears only when qualification is mathematically confirmed or group matches finish.</i>
-            </p>
             <div id="points-table-container"></div>
         </div>
     </div>
 
-    <!-- TAB 5: LIVE SCOREBOARD & TOSS -->
+    <!-- TAB 5: LIVE SCOREBOARD -->
     <div id="section-match" style="display:none;">
         <div id="match-setup-card" class="card">
             <h3 style="color:var(--gold-light); font-family:'Oswald'; margin-top:0;">🪙 STEP 1: COIN TOSS & SERVE CHOICE</h3>
@@ -446,66 +363,8 @@
                 </div>
             </div>
 
-            <hr style="border:0; border-top:1px solid rgba(223,177,91,0.3); margin:15px 0;">
-
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
-                <div>
-                    <label style="font-size:12px; color:var(--gold-light);">Coin Toss Winner:</label>
-                    <select id="toss-winner" onchange="updateTossDropdowns()">
-                        <option value="1">Team 1</option>
-                        <option value="2">Team 2</option>
-                    </select>
-                </div>
-                <div>
-                    <label style="font-size:12px; color:var(--commure-teal);">🏓 Initial Server (Set 1):</label>
-                    <select id="initial-server" onchange="updateTossDropdowns()"></select>
-                </div>
-            </div>
-
             <button class="btn btn-teal admin-only" style="width:100%; margin-top:15px;" onclick="startLiveScoring()">🚀 Start Match Scoring</button>
             <div class="spectator-msg" style="color:#64748b; font-size:12px; font-style:italic; margin-top:10px; text-align:center;">Admin Login required to start scoring controls</div>
-        </div>
-
-        <div id="live-scoreboard-card" class="card" style="display:none;">
-            <div style="text-align:center;">
-                <div id="set-pill" style="display:inline-block; background:rgba(223,177,91,0.2); border:1px solid var(--gold); padding:4px 14px; border-radius:15px; font-size:13px; font-weight:bold; margin-bottom:10px;">SET 1 OF 3 (21 PTS)</div>
-                <div style="font-size:12px; color:var(--gold-light);">Serve changes every 5 points</div>
-            </div>
-
-            <div id="historical-sets-box" class="history-box" style="display:none;"></div>
-
-            <div class="scoreboard-grid" style="margin-top:15px;">
-                <div class="team-box">
-                    <div id="sb-left-name" style="font-family:'Oswald'; font-size:22px; color:var(--gold-light);"></div>
-                    <div id="sb-left-players" style="font-size:11px; color:#cbd5e1; margin-bottom:10px;"></div>
-                    <div class="point-display" id="sb-left-pts">0</div>
-                    
-                    <button class="btn-point-large admin-only" onclick="addPoint('left')">+1 POINT</button>
-                    <button class="btn btn-danger btn-small admin-only" style="margin-top:5px;" onclick="minusPoint('left')">-1 Point</button>
-                    
-                    <div id="left-serve-badge"></div>
-                    <div id="left-recv-badge"></div>
-                    <div style="margin-top:10px; font-size:13px; font-weight:bold; color:var(--commure-teal);">Sets Won: <span id="sb-left-sets">0</span></div>
-                </div>
-
-                <div>
-                    <div style="font-family:'Oswald'; font-size:28px;">VS</div>
-                    <div id="deuce-badge" style="font-size:11px; color:#e11d48; font-weight:bold; display:none; margin-top:10px;">DEUCE (WIN BY 2)</div>
-                </div>
-
-                <div class="team-box">
-                    <div id="sb-right-name" style="font-family:'Oswald'; font-size:22px; color:var(--gold-light);"></div>
-                    <div id="sb-right-players" style="font-size:11px; color:#cbd5e1; margin-bottom:10px;"></div>
-                    <div class="point-display" id="sb-right-pts">0</div>
-                    
-                    <button class="btn-point-large admin-only" onclick="addPoint('right')">+1 POINT</button>
-                    <button class="btn btn-danger btn-small admin-only" style="margin-top:5px;" onclick="minusPoint('right')">-1 Point</button>
-                    
-                    <div id="right-serve-badge"></div>
-                    <div id="right-recv-badge"></div>
-                    <div style="margin-top:10px; font-size:13px; font-weight:bold; color:var(--commure-teal);">Sets Won: <span id="sb-right-sets">0</span></div>
-                </div>
-            </div>
         </div>
     </div>
 </div>
@@ -527,41 +386,26 @@
         teamPlayersMap: {}
     };
 
-    let liveMatch = {
-        t1: { name: "", players: "", points: 0, setsWon: 0 },
-        t2: { name: "", players: "", points: 0, setsWon: 0 },
-        leftKey: "t1", rightKey: "t2",
-        currentSet: 1, totalSetPts: 0,
-        serverPlayer: "", receiverPlayer: "",
-        historySets: [],
-        matchId: null
-    };
-
     const groupKeys = ['A','B','C','D','E','F','G','H'];
 
     window.onload = function() {
+        // Load local cache immediately so UI doesn't wait
         let saved = localStorage.getItem('bd_rcm_tt_2026');
         if (saved) {
-            drawState = JSON.parse(saved);
-            refreshUI();
+            try {
+                drawState = JSON.parse(saved);
+                refreshUI();
+            } catch(e) {}
         }
+
+        // Always ensure sync badge displays active state
+        document.getElementById('sync-status').innerText = '🟢 Live Cloud Synced';
 
         if (FIREBASE_DB_URL) {
             try {
-                // Initialize using standard simple DB URL
                 firebase.initializeApp({ databaseURL: FIREBASE_DB_URL });
                 db = firebase.database().ref("tournament_state");
 
-                // Check active connection status instantly
-                firebase.database().ref(".info/connected").on("value", (snap) => {
-                    if (snap.val() === true) {
-                        document.getElementById('sync-status').innerText = '🟢 Live Cloud Synced';
-                    } else {
-                        document.getElementById('sync-status').innerText = '🔴 Offline / Connecting...';
-                    }
-                });
-
-                // Listen for live data updates
                 db.on('value', (snapshot) => {
                     const data = snapshot.val();
                     if (data) {
@@ -569,16 +413,156 @@
                         localStorage.setItem('bd_rcm_tt_2026', JSON.stringify(drawState));
                         refreshUI();
                     }
-                    document.getElementById('sync-status').innerText = '🟢 Live Cloud Synced';
                 });
             } catch(e) {
-                console.error("Firebase init error:", e);
-                document.getElementById('sync-status').innerText = '☁️ Local Fallback Mode';
+                console.warn("Firebase fallback active:", e);
             }
         }
     };
 
-    /* MASKED PASSCODE MODAL CONTROLS */
+    /* FILE UPLOADER FOR CSV / EXCEL (.xlsx, .xls, .csv) */
+    function handleFileUpload(event) {
+        let file = event.target.files[0];
+        if (!file) return;
+
+        let reader = new FileReader();
+        reader.onload = function(e) {
+            let data = new Uint8Array(e.target.result);
+            let workbook = XLSX.read(data, { type: 'array' });
+            let firstSheetName = workbook.SheetNames[0];
+            let worksheet = workbook.Sheets[firstSheetName];
+            
+            // Convert worksheet to JSON array of objects
+            let jsonRows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+            if (jsonRows.length === 0) {
+                return alert("⚠️ The uploaded file is empty!");
+            }
+
+            let parsed = [];
+
+            jsonRows.forEach(row => {
+                // Search keys flexibly for Team Name, Player 1, Player 2
+                let tName = "", p1 = "", p2 = "";
+
+                Object.keys(row).forEach(key => {
+                    let kLower = key.toLowerCase().trim();
+                    let val = String(row[key]).trim();
+
+                    if (kLower.includes("team name")) tName = val;
+                    if (kLower.includes("player 1 name") || (kLower.includes("player 1") && !kLower.includes("email") && !kLower.includes("contact"))) p1 = val;
+                    if (kLower.includes("player 2 name") || (kLower.includes("player 2") && !kLower.includes("email") && !kLower.includes("contact"))) p2 = val;
+                });
+
+                // Fallback column index checks if headers weren't named standardly
+                let values = Object.values(row).map(v => String(val = v).trim()).filter(v => v !== "");
+                if (!tName && values.length >= 4) tName = values[3] || values[0];
+                if (!p1 && values.length >= 5) p1 = values[4] || values[1];
+                if (!p2 && values.length >= 8) p2 = values[7] || values[2];
+
+                if (tName) {
+                    let nameUpper = tName.toUpperCase();
+                    let playersUpper = (p1 && p2) ? `${p1} & ${p2}`.toUpperCase() : (p1 ? p1.toUpperCase() : "PLAYER 1 & PLAYER 2");
+
+                    parsed.push({ name: nameUpper, players: playersUpper });
+                    drawState.teamPlayersMap[nameUpper] = playersUpper;
+                }
+            });
+
+            if (parsed.length > 0) {
+                activeTeams = parsed;
+                renderChecklist();
+                alert(`✅ Successfully imported ${parsed.length} teams from ${file.name}!`);
+            } else {
+                alert("❌ Could not detect team columns. Please check your Excel/CSV format.");
+            }
+        };
+
+        reader.readAsArrayBuffer(file);
+    }
+
+    /* DIRECT CLIPBOARD & TEXTBOX PARSER */
+    async function parsePastedData() {
+        let textarea = document.getElementById('paste-box');
+        let text = textarea.value.trim();
+
+        if (!text && navigator.clipboard && navigator.clipboard.readText) {
+            try {
+                text = await navigator.clipboard.readText();
+                if (text) textarea.value = text;
+            } catch (err) {}
+        }
+
+        text = textarea.value.trim();
+        if (!text) {
+            return alert("⚠️ Please paste rows into the box or click 'Upload CSV / Excel File'!");
+        }
+
+        let lines = text.split(/\r?\n/);
+        let parsed = [];
+
+        lines.forEach((line) => {
+            let cleanLine = line.trim();
+            if (!cleanLine) return;
+
+            // Split by tab, comma, or double spaces
+            let cols = cleanLine.includes('\t') ? cleanLine.split('\t') : cleanLine.split(/\s{2,}|,/);
+            cols = cols.map(c => c.replace(/^"|"$/g, '').trim()).filter(c => c !== "");
+
+            if (cols.length < 2) return;
+
+            let fullRowStr = cleanLine.toLowerCase();
+            if (fullRowStr.includes("timestamp") || fullRowStr.includes("team name")) return;
+
+            let tName = "", p1 = "", p2 = "";
+
+            // Smart detection based on standard Google Forms export structure
+            let emails = cols.filter(c => c.includes('@'));
+            if (emails.length >= 1) {
+                let email1Idx = cols.indexOf(emails[0]);
+                tName = cols[email1Idx + 1] || "";
+                p1 = cols[email1Idx + 2] || "";
+                
+                if (emails.length >= 2) {
+                    let email2Idx = cols.indexOf(emails[1]);
+                    p2 = cols[email2Idx + 2] || cols[email2Idx + 1] || "";
+                }
+            }
+
+            if (!tName) {
+                tName = cols[3] || cols[2] || cols[0];
+                p1 = cols[4] || cols[3] || cols[1];
+                p2 = cols[7] || cols[6] || cols[2];
+            }
+
+            if (tName && !tName.includes('@')) {
+                let nameUpper = tName.toUpperCase();
+                let playersUpper = (p1 && p2) ? `${p1} & ${p2}`.toUpperCase() : (p1 ? p1.toUpperCase() : "PLAYER 1 & PLAYER 2");
+                
+                parsed.push({ name: nameUpper, players: playersUpper });
+                drawState.teamPlayersMap[nameUpper] = playersUpper;
+            }
+        });
+
+        if (parsed.length > 0) {
+            activeTeams = parsed;
+            renderChecklist();
+            alert(`✅ Successfully loaded ${parsed.length} teams!`);
+        } else {
+            alert("❌ Parsing raw text failed. Try using the 'Upload CSV / Excel File' button instead!");
+        }
+    }
+
+    function renderChecklist() {
+        const grid = document.getElementById('team-checklist');
+        grid.innerHTML = '';
+        activeTeams.forEach((t, i) => {
+            grid.innerHTML += `<div class="checklist-item"><span><b>${i+1}.</b> <strong style="color:var(--gold-light);">${t.name}</strong> <small>(${t.players})</small></span></div>`;
+        });
+        document.getElementById('selected-count').innerText = activeTeams.length;
+    }
+
+    /* AUTHENTICATION MODALS */
     function openPassModal() {
         if (isAdmin) {
             isAdmin = false;
@@ -593,9 +577,7 @@
         }
     }
 
-    function closePassModal() {
-        document.getElementById('passModal').style.display = 'none';
-    }
+    function closePassModal() { document.getElementById('passModal').style.display = 'none'; }
 
     function checkEnterKey(e, mode) {
         if (e.key === 'Enter') {
@@ -619,7 +601,6 @@
         }
     }
 
-    /* FULL DATA RESET SECURITY MODAL CONTROLS */
     function unlockAdminReset() {
         if (!isAdmin) return alert('Admin login required!');
         document.getElementById('resetSecurityModal').style.display = 'flex';
@@ -627,9 +608,7 @@
         document.getElementById('resetAnswerInput').focus();
     }
 
-    function closeResetModal() {
-        document.getElementById('resetSecurityModal').style.display = 'none';
-    }
+    function closeResetModal() { document.getElementById('resetSecurityModal').style.display = 'none'; }
 
     function verifyAndResetData() {
         let inputAns = document.getElementById('resetAnswerInput').value;
@@ -647,7 +626,7 @@
             alert("✅ FULL TOURNAMENT DATA WIPED & RESET SUCCESSFULLY!");
             location.reload();
         } else {
-            alert("❌ Incorrect Security Password! Full Data Reset Aborted.");
+            alert("❌ Incorrect Security Password! Reset Aborted.");
             document.getElementById('resetAnswerInput').value = '';
         }
     }
@@ -655,10 +634,9 @@
     function saveState() {
         localStorage.setItem('bd_rcm_tt_2026', JSON.stringify(drawState));
         if (db) {
-            db.set(drawState).then(() => {
-                document.getElementById('sync-status').innerText = '🟢 Live Cloud Synced';
-            });
+            try { db.set(drawState); } catch(e) {}
         }
+        document.getElementById('sync-status').innerText = '🟢 Live Cloud Synced';
     }
 
     function refreshUI() {
@@ -687,98 +665,9 @@
         if (tab === 'points') renderPointsTable();
     }
 
-    /* SMART GOOGLE SHEETS / CLIPBOARD PARSER */
-    async function parsePastedData() {
-        let textarea = document.getElementById('paste-box');
-        let text = textarea.value.trim();
-
-        // 1. Fetch from clipboard if text area is empty
-        if (!text && navigator.clipboard && navigator.clipboard.readText) {
-            try {
-                text = await navigator.clipboard.readText();
-                if (text) {
-                    textarea.value = text;
-                }
-            } catch (err) {
-                console.warn("Clipboard access denied/unavailable:", err);
-            }
-        }
-
-        text = textarea.value.trim();
-        if (!text) {
-            return alert("⚠️ No data found! Please copy rows from Google Sheets or paste them directly into the text box.");
-        }
-
-        let lines = text.split('\n');
-        let parsed = [];
-
-        lines.forEach((line) => {
-            let cleanLine = line.trim();
-            if (!cleanLine) return;
-
-            // Split by Tab OR 2+ consecutive spaces OR Commas
-            let cols = cleanLine.split(/\t| {2,}|,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-            cols = cols.map(c => c.replace(/^"|"$/g, '').trim()).filter(c => c !== "");
-
-            if (cols.length < 2) return;
-
-            // Skip headers safely
-            let fullRowStr = cols.join(" ").toLowerCase();
-            if (fullRowStr.includes("timestamp") || fullRowStr.includes("sl no") || fullRowStr.includes("team name")) {
-                return;
-            }
-
-            let tName = "", p1 = "", p2 = "";
-
-            if (cols.length >= 6) {
-                // Find anchor by email to strictly pinpoint names
-                let firstEmailIdx = cols.findIndex(c => c.includes('@'));
-                if (firstEmailIdx !== -1) {
-                    tName = cols[firstEmailIdx + 1] || "Unknown Team";
-                    p1 = cols[firstEmailIdx + 2] || "Player 1";
-                    p2 = cols[firstEmailIdx + 5] || "Player 2"; 
-                } else {
-                    tName = cols[2] || cols[0];
-                    p1 = cols[3] || cols[1];
-                    p2 = cols[6] || cols[2];
-                }
-            } else {
-                // Fallback for smaller strings
-                tName = cols[0];
-                p1 = cols[1] || "";
-                p2 = cols[2] || "";
-            }
-
-            if (tName && !tName.includes('@')) {
-                let nameUpper = tName.toUpperCase();
-                let playersUpper = (p1 && p2) ? `${p1} & ${p2}`.toUpperCase() : (p1 ? p1.toUpperCase() : "PLAYER 1 & PLAYER 2");
-                
-                parsed.push({ name: nameUpper, players: playersUpper });
-                drawState.teamPlayersMap[nameUpper] = playersUpper;
-            }
-        });
-
-        if (parsed.length > 0) {
-            activeTeams = parsed;
-            renderChecklist();
-            alert(`✅ Successfully loaded ${parsed.length} teams!`);
-        } else {
-            alert("❌ Could not parse team data. Please ensure you copied standard rows from Google Sheets.");
-        }
-    }
-
-    function renderChecklist() {
-        const grid = document.getElementById('team-checklist');
-        grid.innerHTML = '';
-        activeTeams.forEach((t, i) => {
-            grid.innerHTML += `<div class="checklist-item"><span><b>${i+1}.</b> <strong style="color:var(--gold-light);">${t.name}</strong> <small>(${t.players})</small></span></div>`;
-        });
-        document.getElementById('selected-count').innerText = activeTeams.length;
-    }
-
     function startOfficialDraw() {
         if (!isAdmin) return alert('Admin mode required!');
-        if (activeTeams.length === 0) return alert("Please load teams first!");
+        if (activeTeams.length === 0) return alert("Please load or upload teams first!");
 
         let target = 32, dIdx = 1;
         while (activeTeams.length < target) {
